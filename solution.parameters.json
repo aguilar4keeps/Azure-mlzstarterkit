@@ -1,0 +1,120 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "usgovvirginia"
+    },
+    "identifier": {
+      "value": "lab"
+    },
+    "deploymentNameSuffix": {
+      "value": "adlab001"
+    },
+    "environmentAbbreviation": {
+      "value": "dev"
+    },
+    "deployActivityLogDiagnosticSetting": {
+      "value": false
+    },
+    "deployDefender": {
+      "value": false
+    },
+    "deployPolicy": {
+      "value": false
+    },
+    "emailSecurityContact": {
+      "value": "security@example.mil"
+    },
+    "firewallResourceId": {
+      "value": "/subscriptions/<sub-id>/resourceGroups/<mlz-hub-rg>/providers/Microsoft.Network/azureFirewalls/<firewall-name>"
+    },
+    "hubStorageAccountResourceId": {
+      "value": "/subscriptions/<sub-id>/resourceGroups/<mlz-hub-rg>/providers/Microsoft.Storage/storageAccounts/<hub-storage-name>"
+    },
+    "hubVirtualNetworkResourceId": {
+      "value": "/subscriptions/<sub-id>/resourceGroups/<mlz-hub-rg>/providers/Microsoft.Network/virtualNetworks/<hub-vnet-name>"
+    },
+    "logAnalyticsWorkspaceResourceId": {
+      "value": "/subscriptions/<sub-id>/resourceGroups/<mlz-ops-rg>/providers/Microsoft.OperationalInsights/workspaces/<law-name>"
+    },
+    "virtualNetworkAddressPrefix": {
+      "value": "10.60.0.0/24"
+    },
+    "subnetAddressPrefix": {
+      "value": "10.60.0.0/24"
+    },
+    "workloadName": {
+      "value": "adentrlab"
+    },
+    "workloadShortName": {
+      "value": "adl"
+    },
+    "prefix": {
+      "value": "adlab"
+    },
+    "domainControllerPrivateIp": {
+      "value": "10.60.0.10"
+    },
+    "additionalDnsServers": {
+      "value": []
+    },
+    "adminUsername": {
+      "value": "azureadmin"
+    },
+    "adminPassword": {
+      "value": "REPLACE_WITH_STRONG_PASSWORD"
+    },
+    "safeModeAdminPassword": {
+      "value": "REPLACE_WITH_DSRM_PASSWORD"
+    },
+    "domainName": {
+      "value": "corp.contoso.com"
+    },
+    "domainNetbiosName": {
+      "value": "CORP"
+    },
+    "entraLoginPrincipalId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "entraPrincipalType": {
+      "value": "Group"
+    },
+    "assignVmAdminRole": {
+      "value": true
+    },
+    "assignVmUserRole": {
+      "value": false
+    },
+    "serverVmSize": {
+      "value": "Standard_D4s_v5"
+    },
+    "clientVmSize": {
+      "value": "Standard_D4s_v5"
+    },
+    "serverImagePublisher": {
+      "value": "MicrosoftWindowsServer"
+    },
+    "serverImageOffer": {
+      "value": "WindowsServer"
+    },
+    "serverImageSku": {
+      "value": "2022-datacenter-g2"
+    },
+    "serverImageVersion": {
+      "value": "latest"
+    },
+    "clientImagePublisher": {
+      "value": "MicrosoftWindowsDesktop"
+    },
+    "clientImageOffer": {
+      "value": "windows-11"
+    },
+    "clientImageSku": {
+      "value": "win11-23h2-pro"
+    },
+    "clientImageVersion": {
+      "value": "latest"
+    }
+  }
+}
