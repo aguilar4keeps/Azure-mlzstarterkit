@@ -1,0 +1,275 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2021-09-09/uiFormDefinition.schema.json",
+  "view": {
+    "kind": "Form",
+    "properties": {
+      "title": "MLZ AD + Entra One-Shot Deployment",
+      "steps": [
+        {
+          "name": "basics",
+          "label": "Basics",
+          "elements": [
+            {
+              "name": "scope",
+              "type": "Microsoft.Common.ResourceScope",
+              "location": {
+                "resourceTypes": []
+              }
+            },
+            {
+              "name": "identifier",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Identifier",
+              "toolTip": "1-3 character identifier used in MLZ naming.",
+              "constraints": {
+                "required": true,
+                "regex": "^[a-zA-Z0-9]{1,3}$",
+                "validationMessage": "Use 1-3 alphanumeric characters."
+              }
+            },
+            {
+              "name": "environmentAbbreviation",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Environment",
+              "defaultValue": "Development (dev)",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Development (dev)",
+                    "value": "dev"
+                  },
+                  {
+                    "label": "Test (test)",
+                    "value": "test"
+                  },
+                  {
+                    "label": "Production (prod)",
+                    "value": "prod"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "workloadName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Workload Name",
+              "toolTip": "1-10 character workload name for Tier3 deployment.",
+              "constraints": {
+                "required": true,
+                "regex": "^[a-zA-Z0-9]{1,10}$",
+                "validationMessage": "Use 1-10 alphanumeric characters."
+              }
+            },
+            {
+              "name": "workloadShortName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Workload Short Name",
+              "toolTip": "1-3 character workload short name.",
+              "constraints": {
+                "required": true,
+                "regex": "^[a-zA-Z0-9]{1,3}$",
+                "validationMessage": "Use 1-3 alphanumeric characters."
+              }
+            },
+            {
+              "name": "prefix",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Resource Prefix",
+              "toolTip": "Prefix for VM and sample CSPM resources.",
+              "constraints": {
+                "required": true,
+                "regex": "^[a-zA-Z0-9-]{2,15}$",
+                "validationMessage": "Use 2-15 characters (letters, numbers, hyphen)."
+              }
+            }
+          ]
+        },
+        {
+          "name": "mlzCore",
+          "label": "Core MLZ",
+          "elements": [
+            {
+              "name": "deployBastion",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Deploy Bastion",
+              "defaultValue": true
+            },
+            {
+              "name": "deployDefender",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Deploy Defender for Cloud",
+              "defaultValue": false
+            },
+            {
+              "name": "deployPolicy",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Deploy Policy Assignments",
+              "defaultValue": false
+            },
+            {
+              "name": "emailSecurityContact",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Security Contact Email",
+              "defaultValue": "security@example.mil",
+              "constraints": {
+                "required": true,
+                "regex": "^.+@.+\\..+$",
+                "validationMessage": "Enter a valid email address."
+              }
+            },
+            {
+              "name": "virtualNetworkAddressPrefix",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Tier3 Virtual Network CIDR",
+              "defaultValue": "10.60.0.0/24",
+              "constraints": {
+                "required": true,
+                "regex": "^(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\/(1[0-9]|2[0-8])$",
+                "validationMessage": "Enter a valid CIDR value."
+              }
+            },
+            {
+              "name": "subnetAddressPrefix",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Tier3 Subnet CIDR",
+              "defaultValue": "10.60.0.0/24",
+              "constraints": {
+                "required": true,
+                "regex": "^(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\/(1[0-9]|2[0-8])$",
+                "validationMessage": "Enter a valid CIDR value."
+              }
+            }
+          ]
+        },
+        {
+          "name": "adEntra",
+          "label": "AD + Entra",
+          "elements": [
+            {
+              "name": "adminUsername",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Admin Username",
+              "constraints": {
+                "required": true
+              }
+            },
+            {
+              "name": "adminPassword",
+              "type": "Microsoft.Common.PasswordBox",
+              "label": "Admin Password",
+              "constraints": {
+                "required": true
+              }
+            },
+            {
+              "name": "safeModeAdminPassword",
+              "type": "Microsoft.Common.PasswordBox",
+              "label": "Safe Mode Admin Password (DSRM)",
+              "constraints": {
+                "required": true
+              }
+            },
+            {
+              "name": "domainName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Domain Name",
+              "placeholder": "corp.contoso.com",
+              "constraints": {
+                "required": true
+              }
+            },
+            {
+              "name": "domainNetbiosName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Domain NetBIOS Name",
+              "placeholder": "CORP",
+              "constraints": {
+                "required": true
+              }
+            },
+            {
+              "name": "entraLoginPrincipalId",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Entra Principal Object ID",
+              "constraints": {
+                "required": true,
+                "regex": "^[0-9a-fA-F-]{36}$",
+                "validationMessage": "Enter a valid GUID."
+              }
+            },
+            {
+              "name": "entraPrincipalType",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Entra Principal Type",
+              "defaultValue": "Group",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Group",
+                    "value": "Group"
+                  },
+                  {
+                    "label": "User",
+                    "value": "User"
+                  },
+                  {
+                    "label": "Service Principal",
+                    "value": "ServicePrincipal"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "domainControllerPrivateIp",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Domain Controller Private IP",
+              "defaultValue": "10.60.0.10",
+              "constraints": {
+                "required": true,
+                "regex": "^(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)$",
+                "validationMessage": "Enter a valid IPv4 address."
+              }
+            }
+          ]
+        },
+        {
+          "name": "cspm",
+          "label": "CSPM Coverage",
+          "elements": [
+            {
+              "name": "description",
+              "type": "Microsoft.Common.TextBlock",
+              "options": {
+                "text": "This deployment will also create one SQL DB, one Storage account + blob container, one Container Registry, and one Resource Manager sample deployment."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "outputs": {
+      "location": "[steps('basics').scope.location.name]",
+      "identifier": "[steps('basics').identifier]",
+      "environmentAbbreviation": "[steps('basics').environmentAbbreviation]",
+      "workloadName": "[steps('basics').workloadName]",
+      "workloadShortName": "[steps('basics').workloadShortName]",
+      "prefix": "[steps('basics').prefix]",
+      "deployBastion": "[steps('mlzCore').deployBastion]",
+      "deployDefender": "[steps('mlzCore').deployDefender]",
+      "deployPolicy": "[steps('mlzCore').deployPolicy]",
+      "emailSecurityContact": "[steps('mlzCore').emailSecurityContact]",
+      "virtualNetworkAddressPrefix": "[steps('mlzCore').virtualNetworkAddressPrefix]",
+      "subnetAddressPrefix": "[steps('mlzCore').subnetAddressPrefix]",
+      "adminUsername": "[steps('adEntra').adminUsername]",
+      "adminPassword": "[steps('adEntra').adminPassword]",
+      "safeModeAdminPassword": "[steps('adEntra').safeModeAdminPassword]",
+      "domainName": "[steps('adEntra').domainName]",
+      "domainNetbiosName": "[steps('adEntra').domainNetbiosName]",
+      "entraLoginPrincipalId": "[steps('adEntra').entraLoginPrincipalId]",
+      "entraPrincipalType": "[steps('adEntra').entraPrincipalType]",
+      "domainControllerPrivateIp": "[steps('adEntra').domainControllerPrivateIp]"
+    }
+  }
+}
