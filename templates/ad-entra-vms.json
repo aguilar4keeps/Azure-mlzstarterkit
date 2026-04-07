@@ -1,0 +1,473 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.42.1.51946",
+      "templateHash": "11075919025920917266"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Azure region for lab VMs."
+      }
+    },
+    "prefix": {
+      "type": "string",
+      "defaultValue": "adlab",
+      "metadata": {
+        "description": "Name prefix for all deployed VMs."
+      }
+    },
+    "subnetResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Subnet resource ID from MLZ Tier3 workload network."
+      }
+    },
+    "domainControllerPrivateIp": {
+      "type": "string",
+      "defaultValue": "10.60.0.10",
+      "metadata": {
+        "description": "Static private IP for the domain controller (must be in tier3 subnet)."
+      }
+    },
+    "additionalDnsServers": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Optional additional DNS servers for VM NICs. Domain controller IP is always added first."
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Local administrator username for all VMs."
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Local administrator password for all VMs and initial domain admin operations."
+      }
+    },
+    "domainName": {
+      "type": "string",
+      "defaultValue": "corp.contoso.com",
+      "metadata": {
+        "description": "AD DS domain FQDN (example: corp.contoso.com)."
+      }
+    },
+    "domainNetbiosName": {
+      "type": "string",
+      "defaultValue": "CORP",
+      "metadata": {
+        "description": "AD DS NetBIOS name (example: CORP)."
+      }
+    },
+    "safeModeAdminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "DSRM safe mode password for AD DS promotion."
+      }
+    },
+    "entraLoginPrincipalId": {
+      "type": "string",
+      "metadata": {
+        "description": "Object ID of Entra principal that should be able to sign in to every VM."
+      }
+    },
+    "entraPrincipalType": {
+      "type": "string",
+      "defaultValue": "Group",
+      "allowedValues": [
+        "User",
+        "Group",
+        "ServicePrincipal"
+      ],
+      "metadata": {
+        "description": "Type of Entra principal represented by entraLoginPrincipalId."
+      }
+    },
+    "assignVmAdminRole": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Assign the Virtual Machine Administrator Login role."
+      }
+    },
+    "assignVmUserRole": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Assign the Virtual Machine User Login role."
+      }
+    },
+    "serverVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D4s_v5",
+      "metadata": {
+        "description": "VM size for domain controller and member servers."
+      }
+    },
+    "clientVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D4s_v5",
+      "metadata": {
+        "description": "VM size for Windows client VMs."
+      }
+    },
+    "serverImagePublisher": {
+      "type": "string",
+      "defaultValue": "MicrosoftWindowsServer",
+      "metadata": {
+        "description": "Server image publisher."
+      }
+    },
+    "serverImageOffer": {
+      "type": "string",
+      "defaultValue": "WindowsServer",
+      "metadata": {
+        "description": "Server image offer."
+      }
+    },
+    "serverImageSku": {
+      "type": "string",
+      "defaultValue": "2022-datacenter-g2",
+      "metadata": {
+        "description": "Server image SKU."
+      }
+    },
+    "serverImageVersion": {
+      "type": "string",
+      "defaultValue": "latest",
+      "metadata": {
+        "description": "Server image version."
+      }
+    },
+    "clientImagePublisher": {
+      "type": "string",
+      "defaultValue": "MicrosoftWindowsDesktop",
+      "metadata": {
+        "description": "Client image publisher."
+      }
+    },
+    "clientImageOffer": {
+      "type": "string",
+      "defaultValue": "windows-11",
+      "metadata": {
+        "description": "Client image offer."
+      }
+    },
+    "clientImageSku": {
+      "type": "string",
+      "defaultValue": "win11-23h2-pro",
+      "metadata": {
+        "description": "Client image SKU. Update if your cloud does not expose this SKU."
+      }
+    },
+    "clientImageVersion": {
+      "type": "string",
+      "defaultValue": "latest",
+      "metadata": {
+        "description": "Client image version."
+      }
+    }
+  },
+  "variables": {
+    "$fxv#0": "param (\n  [Parameter(Mandatory = $true)]\n  [string]$DomainName,\n\n  [Parameter(Mandatory = $true)]\n  [string]$DomainNetbiosName,\n\n  [Parameter(Mandatory = $true)]\n  [string]$SafeModeAdminPassword\n)\n\n$ErrorActionPreference = 'Stop'\n\n# Install AD DS binaries if needed.\nif (-not (Get-WindowsFeature -Name 'AD-Domain-Services').Installed) {\n  Install-WindowsFeature -Name 'AD-Domain-Services' -IncludeManagementTools | Out-Null\n}\n\nImport-Module ADDSDeployment\n\ntry {\n  $null = Get-ADDomain -Identity $DomainName -ErrorAction Stop\n  Write-Output \"Domain '$DomainName' already exists. Skipping promotion.\"\n}\ncatch {\n  $safeMode = ConvertTo-SecureString -String $SafeModeAdminPassword -AsPlainText -Force\n\n  Install-ADDSForest `\n    -DomainName $DomainName `\n    -DomainNetbiosName $DomainNetbiosName `\n    -InstallDNS `\n    -Force `\n    -NoRebootOnCompletion:$false `\n    -SafeModeAdministratorPassword $safeMode\n}",
+    "$fxv#1": "param (\n  [Parameter(Mandatory = $true)]\n  [string]$DomainName,\n\n  [Parameter(Mandatory = $true)]\n  [string]$DomainAdminUsername,\n\n  [Parameter(Mandatory = $true)]\n  [string]$DomainAdminPassword,\n\n  [Parameter(Mandatory = $true)]\n  [string]$DomainControllerIp,\n\n  [int]$RetryCount = 40\n)\n\n$ErrorActionPreference = 'Stop'\n\n$cs = Get-CimInstance -ClassName Win32_ComputerSystem\nif ($cs.PartOfDomain -and $cs.Domain -ieq $DomainName) {\n  Write-Output \"Already joined to '$DomainName'.\"\n  exit 0\n}\n\nfor ($i = 1; $i -le $RetryCount; $i++) {\n  $portCheck = Test-NetConnection -ComputerName $DomainControllerIp -Port 389 -InformationLevel Quiet\n  if ($portCheck) {\n    break\n  }\n\n  if ($i -eq $RetryCount) {\n    throw \"Domain controller $DomainControllerIp was not reachable on LDAP port 389 after $RetryCount attempts.\"\n  }\n\n  Start-Sleep -Seconds 15\n}\n\n$securePassword = ConvertTo-SecureString -String $DomainAdminPassword -AsPlainText -Force\n$credential = New-Object System.Management.Automation.PSCredential (\"$DomainAdminUsername@$DomainName\", $securePassword)\n\n$joined = $false\nfor ($j = 1; $j -le $RetryCount; $j++) {\n  try {\n    Add-Computer -DomainName $DomainName -Credential $credential -ErrorAction Stop\n    $joined = $true\n    break\n  }\n  catch {\n    if ($j -eq $RetryCount) {\n      throw\n    }\n    Start-Sleep -Seconds 20\n  }\n}\n\nif (-not $joined) {\n  throw \"Unable to join '$env:COMPUTERNAME' to '$DomainName'.\"\n}\n\n# Reboot is required to complete domain join.\nshutdown.exe /r /t 15 /f /c \"Completing domain join to $DomainName\"",
+    "vmAdminRoleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '1c0163c0-47e6-4577-8991-ea5c82e286e4')]",
+    "vmUserRoleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'fb879df8-f326-4884-b1cf-06f3ad86be52')]",
+    "dnsServerList": "[union(createArray(parameters('domainControllerPrivateIp')), parameters('additionalDnsServers'))]",
+    "serverImage": {
+      "publisher": "[parameters('serverImagePublisher')]",
+      "offer": "[parameters('serverImageOffer')]",
+      "sku": "[parameters('serverImageSku')]",
+      "version": "[parameters('serverImageVersion')]"
+    },
+    "clientImage": {
+      "publisher": "[parameters('clientImagePublisher')]",
+      "offer": "[parameters('clientImageOffer')]",
+      "sku": "[parameters('clientImageSku')]",
+      "version": "[parameters('clientImageVersion')]"
+    },
+    "vmDefinitions": [
+      {
+        "name": "[format('{0}-dc01', parameters('prefix'))]",
+        "size": "[parameters('serverVmSize')]",
+        "image": "[variables('serverImage')]",
+        "isDc": true
+      },
+      {
+        "name": "[format('{0}-ms01', parameters('prefix'))]",
+        "size": "[parameters('serverVmSize')]",
+        "image": "[variables('serverImage')]",
+        "isDc": false
+      },
+      {
+        "name": "[format('{0}-ms02', parameters('prefix'))]",
+        "size": "[parameters('serverVmSize')]",
+        "image": "[variables('serverImage')]",
+        "isDc": false
+      },
+      {
+        "name": "[format('{0}-cl01', parameters('prefix'))]",
+        "size": "[parameters('clientVmSize')]",
+        "image": "[variables('clientImage')]",
+        "isDc": false
+      },
+      {
+        "name": "[format('{0}-cl02', parameters('prefix'))]",
+        "size": "[parameters('clientVmSize')]",
+        "image": "[variables('clientImage')]",
+        "isDc": false
+      },
+      {
+        "name": "[format('{0}-cl03', parameters('prefix'))]",
+        "size": "[parameters('clientVmSize')]",
+        "image": "[variables('clientImage')]",
+        "isDc": false
+      }
+    ]
+  },
+  "resources": [
+    {
+      "copy": {
+        "name": "nics",
+        "count": "[length(variables('vmDefinitions'))]"
+      },
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2024-05-01",
+      "name": "[format('{0}-nic', variables('vmDefinitions')[copyIndex()].name)]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "dnsSettings": {
+          "dnsServers": "[variables('dnsServerList')]"
+        },
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAddress": "[if(variables('vmDefinitions')[copyIndex()].isDc, parameters('domainControllerPrivateIp'), null())]",
+              "privateIPAllocationMethod": "[if(variables('vmDefinitions')[copyIndex()].isDc, 'Static', 'Dynamic')]",
+              "subnet": {
+                "id": "[parameters('subnetResourceId')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "copy": {
+        "name": "virtualMachines",
+        "count": "[length(variables('vmDefinitions'))]"
+      },
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2024-11-01",
+      "name": "[variables('vmDefinitions')[copyIndex()].name]",
+      "location": "[parameters('location')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('vmDefinitions')[copyIndex()].size]"
+        },
+        "osProfile": {
+          "computerName": "[take(variables('vmDefinitions')[copyIndex()].name, 15)]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]",
+          "windowsConfiguration": {
+            "provisionVMAgent": true,
+            "enableAutomaticUpdates": true
+          }
+        },
+        "storageProfile": {
+          "imageReference": "[variables('vmDefinitions')[copyIndex()].image]",
+          "osDisk": {
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "Premium_LRS"
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', variables('vmDefinitions')[copyIndex()].name))]",
+              "properties": {
+                "primary": true
+              }
+            }
+          ]
+        },
+        "securityProfile": {
+          "securityType": "TrustedLaunch",
+          "uefiSettings": {
+            "secureBootEnabled": true,
+            "vTpmEnabled": true
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', variables('vmDefinitions')[copyIndex()].name))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/runCommands",
+      "apiVersion": "2023-09-01",
+      "name": "[format('{0}/{1}', variables('vmDefinitions')[0].name, 'promote-domain-controller')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "asyncExecution": true,
+        "treatFailureAsDeploymentFailure": false,
+        "source": {
+          "script": "[variables('$fxv#0')]"
+        },
+        "parameters": [
+          {
+            "name": "DomainName",
+            "value": "[parameters('domainName')]"
+          },
+          {
+            "name": "DomainNetbiosName",
+            "value": "[parameters('domainNetbiosName')]"
+          }
+        ],
+        "protectedParameters": [
+          {
+            "name": "SafeModeAdminPassword",
+            "value": "[parameters('safeModeAdminPassword')]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDefinitions')[0].name)]"
+      ]
+    },
+    {
+      "copy": {
+        "name": "domainJoinCommands",
+        "count": "[length(range(1, sub(length(variables('vmDefinitions')), 1)))]"
+      },
+      "type": "Microsoft.Compute/virtualMachines/runCommands",
+      "apiVersion": "2023-09-01",
+      "name": "[format('{0}/{1}', variables('vmDefinitions')[range(1, sub(length(variables('vmDefinitions')), 1))[copyIndex()]].name, 'join-domain')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "asyncExecution": true,
+        "treatFailureAsDeploymentFailure": false,
+        "source": {
+          "script": "[variables('$fxv#1')]"
+        },
+        "parameters": [
+          {
+            "name": "DomainName",
+            "value": "[parameters('domainName')]"
+          },
+          {
+            "name": "DomainAdminUsername",
+            "value": "[parameters('adminUsername')]"
+          },
+          {
+            "name": "DomainControllerIp",
+            "value": "[parameters('domainControllerPrivateIp')]"
+          }
+        ],
+        "protectedParameters": [
+          {
+            "name": "DomainAdminPassword",
+            "value": "[parameters('adminPassword')]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines/runCommands', variables('vmDefinitions')[0].name, 'promote-domain-controller')]",
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDefinitions')[range(1, sub(length(variables('vmDefinitions')), 1))[copyIndex()]].name)]"
+      ]
+    },
+    {
+      "copy": {
+        "name": "aadLoginExtensions",
+        "count": "[length(variables('vmDefinitions'))]"
+      },
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2024-11-01",
+      "name": "[format('{0}/{1}', variables('vmDefinitions')[copyIndex()].name, 'AADLoginForWindows')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "publisher": "Microsoft.Azure.ActiveDirectory",
+        "type": "AADLoginForWindows",
+        "typeHandlerVersion": "2.2",
+        "autoUpgradeMinorVersion": true,
+        "enableAutomaticUpgrade": true
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDefinitions')[copyIndex()].name)]"
+      ]
+    },
+    {
+      "copy": {
+        "name": "vmAdminRoleAssignments",
+        "count": "[length(variables('vmDefinitions'))]"
+      },
+      "condition": "[parameters('assignVmAdminRole')]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDefinitions')[copyIndex()].name)]",
+      "name": "[guid(resourceId('Microsoft.Compute/virtualMachines', variables('vmDefinitions')[copyIndex()].name), variables('vmAdminRoleDefinitionId'), parameters('entraLoginPrincipalId'))]",
+      "properties": {
+        "roleDefinitionId": "[variables('vmAdminRoleDefinitionId')]",
+        "principalId": "[parameters('entraLoginPrincipalId')]",
+        "principalType": "[parameters('entraPrincipalType')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDefinitions')[copyIndex()].name)]",
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDefinitions')[copyIndex()].name)]"
+      ]
+    },
+    {
+      "copy": {
+        "name": "vmUserRoleAssignments",
+        "count": "[length(variables('vmDefinitions'))]"
+      },
+      "condition": "[parameters('assignVmUserRole')]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDefinitions')[copyIndex()].name)]",
+      "name": "[guid(resourceId('Microsoft.Compute/virtualMachines', variables('vmDefinitions')[copyIndex()].name), variables('vmUserRoleDefinitionId'), parameters('entraLoginPrincipalId'))]",
+      "properties": {
+        "roleDefinitionId": "[variables('vmUserRoleDefinitionId')]",
+        "principalId": "[parameters('entraLoginPrincipalId')]",
+        "principalType": "[parameters('entraPrincipalType')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDefinitions')[copyIndex()].name)]",
+        "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDefinitions')[copyIndex()].name)]"
+      ]
+    }
+  ],
+  "outputs": {
+    "deployedVmNames": {
+      "type": "array",
+      "copy": {
+        "count": "[length(variables('vmDefinitions'))]",
+        "input": "[variables('vmDefinitions')[copyIndex()].name]"
+      }
+    },
+    "domainControllerName": {
+      "type": "string",
+      "value": "[variables('vmDefinitions')[0].name]"
+    },
+    "domainControllerPrivateIp": {
+      "type": "string",
+      "value": "[parameters('domainControllerPrivateIp')]"
+    }
+  }
+}
