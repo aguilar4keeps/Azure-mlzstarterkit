@@ -9,10 +9,13 @@
       "value": ""
     },
     "deploymentNameSuffix": {
-      "value": "adlab001"
+      "value": ""
     },
     "environmentAbbreviation": {
       "value": "dev"
+    },
+    "deployBastion": {
+      "value": true
     },
     "deployActivityLogDiagnosticSetting": {
       "value": false
@@ -24,18 +27,6 @@
       "value": false
     },
     "emailSecurityContact": {
-      "value": "security@example.mil"
-    },
-    "firewallResourceId": {
-      "value": ""
-    },
-    "hubStorageAccountResourceId": {
-      "value": ""
-    },
-    "hubVirtualNetworkResourceId": {
-      "value": ""
-    },
-    "logAnalyticsWorkspaceResourceId": {
       "value": ""
     },
     "virtualNetworkAddressPrefix": {

@@ -31,6 +31,13 @@
         "prod"
       ]
     },
+    "deployBastion": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Deploy Bastion in core MLZ hub."
+      }
+    },
     "deployActivityLogDiagnosticSetting": {
       "type": "bool",
       "defaultValue": false
@@ -46,18 +53,6 @@
     "emailSecurityContact": {
       "type": "string",
       "defaultValue": "security@example.mil"
-    },
-    "firewallResourceId": {
-      "type": "string"
-    },
-    "hubStorageAccountResourceId": {
-      "type": "string"
-    },
-    "hubVirtualNetworkResourceId": {
-      "type": "string"
-    },
-    "logAnalyticsWorkspaceResourceId": {
-      "type": "string"
     },
     "virtualNetworkAddressPrefix": {
       "type": "string",
@@ -161,15 +156,67 @@
     }
   },
   "variables": {
+    "coreDeploymentName": "[format('deploy-mlz-core-{0}', parameters('deploymentNameSuffix'))]",
     "tier3DeploymentName": "[format('deploy-tier3-{0}', parameters('deploymentNameSuffix'))]",
-    "labVmDeploymentName": "[format('deploy-ad-entra-vms-{0}', parameters('deploymentNameSuffix'))]"
+    "labVmDeploymentName": "[format('deploy-ad-entra-vms-{0}', parameters('deploymentNameSuffix'))]",
+    "cspmCoverageDeploymentName": "[format('deploy-cspm-coverage-{0}', parameters('deploymentNameSuffix'))]"
   },
   "resources": [
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
+      "name": "[variables('coreDeploymentName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "https://raw.githubusercontent.com/Azure/missionlz/main/src/mlz.json"
+        },
+        "parameters": {
+          "deploymentNameSuffix": {
+            "value": "[parameters('deploymentNameSuffix')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "identifier": {
+            "value": "[parameters('identifier')]"
+          },
+          "environmentAbbreviation": {
+            "value": "[parameters('environmentAbbreviation')]"
+          },
+          "deployBastion": {
+            "value": "[parameters('deployBastion')]"
+          },
+          "deployActiveDirectoryDomainServices": {
+            "value": false
+          },
+          "deployLinuxVirtualMachine": {
+            "value": false
+          },
+          "deployWindowsVirtualMachine": {
+            "value": false
+          },
+          "deployDefender": {
+            "value": "[parameters('deployDefender')]"
+          },
+          "deployPolicy": {
+            "value": "[parameters('deployPolicy')]"
+          },
+          "emailSecurityContact": {
+            "value": "[parameters('emailSecurityContact')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
       "name": "[variables('tier3DeploymentName')]",
       "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName'))]"
+      ],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -201,16 +248,16 @@
             "value": "[parameters('emailSecurityContact')]"
           },
           "firewallResourceId": {
-            "value": "[parameters('firewallResourceId')]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.azureFirewallResourceId.value]"
           },
           "hubStorageAccountResourceId": {
-            "value": "[parameters('hubStorageAccountResourceId')]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.hubStorageAccountResourceId.value]"
           },
           "hubVirtualNetworkResourceId": {
-            "value": "[parameters('hubVirtualNetworkResourceId')]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.hubVirtualNetworkResourceId.value]"
           },
           "logAnalyticsWorkspaceResourceId": {
-            "value": "[parameters('logAnalyticsWorkspaceResourceId')]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value]"
           },
           "virtualNetworkAddressPrefix": {
             "value": "[parameters('virtualNetworkAddressPrefix')]"
@@ -316,12 +363,42 @@
           }
         }
       }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[variables('cspmCoverageDeploymentName')]",
+      "location": "[parameters('location')]",
+      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName)]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[uri(deployment().properties.templateLink.uri, 'templates/cspm-coverage.json')]"
+        },
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "namePrefix": {
+            "value": "[parameters('prefix')]"
+          },
+          "sqlAdminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "sqlAdminPassword": {
+            "value": "[parameters('adminPassword')]"
+          }
+        }
+      }
     }
   ],
   "outputs": {
-    "tier3DeploymentName": {
+    "coreDeploymentName": {
       "type": "string",
-      "value": "[variables('tier3DeploymentName')]"
+      "value": "[variables('coreDeploymentName')]"
     },
     "tier3ResourceGroupName": {
       "type": "string",
@@ -330,6 +407,10 @@
     "tier3SubnetResourceId": {
       "type": "string",
       "value": "[reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.subnetResourceId]"
+    },
+    "hubVirtualNetworkResourceId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.hubVirtualNetworkResourceId.value]"
     }
   }
 }
