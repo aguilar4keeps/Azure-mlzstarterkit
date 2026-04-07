@@ -3,10 +3,10 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "location": {
-      "value": "usgovvirginia"
+      "value": ""
     },
     "identifier": {
-      "value": "lab"
+      "value": ""
     },
     "deploymentNameSuffix": {
       "value": "adlab001"
@@ -27,16 +27,16 @@
       "value": "security@example.mil"
     },
     "firewallResourceId": {
-      "value": "/subscriptions/<sub-id>/resourceGroups/<mlz-hub-rg>/providers/Microsoft.Network/azureFirewalls/<firewall-name>"
+      "value": ""
     },
     "hubStorageAccountResourceId": {
-      "value": "/subscriptions/<sub-id>/resourceGroups/<mlz-hub-rg>/providers/Microsoft.Storage/storageAccounts/<hub-storage-name>"
+      "value": ""
     },
     "hubVirtualNetworkResourceId": {
-      "value": "/subscriptions/<sub-id>/resourceGroups/<mlz-hub-rg>/providers/Microsoft.Network/virtualNetworks/<hub-vnet-name>"
+      "value": ""
     },
     "logAnalyticsWorkspaceResourceId": {
-      "value": "/subscriptions/<sub-id>/resourceGroups/<mlz-ops-rg>/providers/Microsoft.OperationalInsights/workspaces/<law-name>"
+      "value": ""
     },
     "virtualNetworkAddressPrefix": {
       "value": "10.60.0.0/24"
@@ -45,13 +45,13 @@
       "value": "10.60.0.0/24"
     },
     "workloadName": {
-      "value": "adentrlab"
+      "value": ""
     },
     "workloadShortName": {
-      "value": "adl"
+      "value": ""
     },
     "prefix": {
-      "value": "adlab"
+      "value": ""
     },
     "domainControllerPrivateIp": {
       "value": "10.60.0.10"
@@ -60,22 +60,22 @@
       "value": []
     },
     "adminUsername": {
-      "value": "azureadmin"
+      "value": ""
     },
     "adminPassword": {
-      "value": "REPLACE_WITH_STRONG_PASSWORD"
+      "value": ""
     },
     "safeModeAdminPassword": {
-      "value": "REPLACE_WITH_DSRM_PASSWORD"
+      "value": ""
     },
     "domainName": {
-      "value": "corp.contoso.com"
+      "value": ""
     },
     "domainNetbiosName": {
-      "value": "CORP"
+      "value": ""
     },
     "entraLoginPrincipalId": {
-      "value": "00000000-0000-0000-0000-000000000000"
+      "value": ""
     },
     "entraPrincipalType": {
       "value": "Group"

@@ -4,7 +4,6 @@
   "parameters": {
     "location": {
       "type": "string",
-      "defaultValue": "usgovvirginia",
       "metadata": {
         "description": "Deployment location."
       }
@@ -18,7 +17,6 @@
     },
     "identifier": {
       "type": "string",
-      "defaultValue": "lab",
       "maxLength": 3,
       "metadata": {
         "description": "MLZ identifier (max 3 chars)."
@@ -70,16 +68,13 @@
       "defaultValue": "10.60.0.0/24"
     },
     "workloadName": {
-      "type": "string",
-      "defaultValue": "adentrlab"
+      "type": "string"
     },
     "workloadShortName": {
-      "type": "string",
-      "defaultValue": "adl"
+      "type": "string"
     },
     "prefix": {
-      "type": "string",
-      "defaultValue": "adlab"
+      "type": "string"
     },
     "domainControllerPrivateIp": {
       "type": "string",
@@ -90,8 +85,7 @@
       "defaultValue": []
     },
     "adminUsername": {
-      "type": "string",
-      "defaultValue": "azureadmin"
+      "type": "string"
     },
     "adminPassword": {
       "type": "secureString"
@@ -100,12 +94,10 @@
       "type": "secureString"
     },
     "domainName": {
-      "type": "string",
-      "defaultValue": "corp.contoso.com"
+      "type": "string"
     },
     "domainNetbiosName": {
-      "type": "string",
-      "defaultValue": "CORP"
+      "type": "string"
     },
     "entraLoginPrincipalId": {
       "type": "string"

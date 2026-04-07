@@ -28,7 +28,7 @@ Azure Government:
 
 ## Required Inputs
 
-Populate these before deploy:
+When you click the blue deploy button, enter these in the portal UI:
 
 - `firewallResourceId`
 - `hubStorageAccountResourceId`
@@ -41,6 +41,6 @@ Populate these before deploy:
 ## Important Notes
 
 - This expects your MLZ hub resources to already exist.
-- Default location is `usgovvirginia`; change if needed.
+- Location is prompted at deploy time in the UI.
 - If Windows 11 SKU is unavailable in your target cloud, change `clientImage*` parameters.
 - If this repository stays private, portal-linked raw template URIs are not publicly resolvable. For blue buttons to work directly, repository visibility should be public.
