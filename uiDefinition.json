@@ -551,7 +551,7 @@
         "clientImageSku": "[steps('remoteAccess').clientImageSku]",
         "clientImageVersion": "[steps('remoteAccess').clientImageVersion]",
         "location": "[steps('basics').resourceScope.location.name]",
-        "deploymentNameSuffix": "[utcNow('yyyyMMddHHmmss')]"
+        "deploymentNameSuffix": "[utcNow()]"
       }
     }
   }
