@@ -791,7 +791,7 @@
       "condition": "[parameters('autoCreateEntraGroup')]",
       "type": "Microsoft.Graph/groups",
       "apiVersion": "2023-07-01-preview",
-      "uniqueName": "[variables('entraGroupUniqueName')]",
+      "name": "[variables('entraGroupUniqueName')]",
       "displayName": "[variables('entraGroupUniqueName')]",
       "mailEnabled": false,
       "mailNickname": "[variables('entraGroupUniqueName')]",
