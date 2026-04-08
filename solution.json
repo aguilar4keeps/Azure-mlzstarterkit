@@ -46,7 +46,76 @@
       "type": "bool",
       "defaultValue": false
     },
+    "deployDefenderCspm": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deployDefenderForServers": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "defenderForServersSubPlan": {
+      "type": "string",
+      "defaultValue": "P2",
+      "allowedValues": [ "P1", "P2" ]
+    },
+    "deployDefenderForStorage": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deployDefenderForSql": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deployDefenderForContainers": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deployDefenderForAppService": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deployDefenderForKeyVault": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deployDefenderForArm": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deployDefenderForDns": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deployDefenderForOssDb": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deployDefenderForCosmosDb": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deployDefenderForApis": {
+      "type": "bool",
+      "defaultValue": false
+    },
     "deployPolicy": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deployNist80053": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deployNist800171": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deployIl5": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "deploySentinel": {
       "type": "bool",
       "defaultValue": false
     },
@@ -159,7 +228,8 @@
     "coreDeploymentName": "[format('deploy-mlz-core-{0}', parameters('deploymentNameSuffix'))]",
     "tier3DeploymentName": "[format('deploy-tier3-{0}', parameters('deploymentNameSuffix'))]",
     "labVmDeploymentName": "[format('deploy-ad-entra-vms-{0}', parameters('deploymentNameSuffix'))]",
-    "cspmCoverageDeploymentName": "[format('deploy-cspm-coverage-{0}', parameters('deploymentNameSuffix'))]"
+    "cspmCoverageDeploymentName": "[format('deploy-cspm-coverage-{0}', parameters('deploymentNameSuffix'))]",
+    "sentinelDeploymentName": "[format('deploy-sentinel-{0}', parameters('deploymentNameSuffix'))]"
   },
   "resources": [
     {
@@ -390,6 +460,176 @@
           },
           "sqlAdminPassword": {
             "value": "[parameters('adminPassword')]"
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('deployDefenderCspm')]",
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2024-01-01",
+      "name": "CloudPosture",
+      "properties": { "pricingTier": "Standard" }
+    },
+    {
+      "condition": "[parameters('deployDefenderForServers')]",
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2024-01-01",
+      "name": "VirtualMachines",
+      "properties": {
+        "pricingTier": "Standard",
+        "subPlan": "[parameters('defenderForServersSubPlan')]"
+      }
+    },
+    {
+      "condition": "[parameters('deployDefenderForStorage')]",
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2024-01-01",
+      "name": "StorageAccounts",
+      "properties": { "pricingTier": "Standard" }
+    },
+    {
+      "condition": "[parameters('deployDefenderForSql')]",
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2024-01-01",
+      "name": "SqlServerVirtualMachines",
+      "properties": { "pricingTier": "Standard" }
+    },
+    {
+      "condition": "[parameters('deployDefenderForContainers')]",
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2024-01-01",
+      "name": "Containers",
+      "properties": { "pricingTier": "Standard" }
+    },
+    {
+      "condition": "[parameters('deployDefenderForAppService')]",
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2024-01-01",
+      "name": "AppServices",
+      "properties": { "pricingTier": "Standard" }
+    },
+    {
+      "condition": "[parameters('deployDefenderForKeyVault')]",
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2024-01-01",
+      "name": "KeyVaults",
+      "properties": { "pricingTier": "Standard" }
+    },
+    {
+      "condition": "[parameters('deployDefenderForArm')]",
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2024-01-01",
+      "name": "Arm",
+      "properties": { "pricingTier": "Standard" }
+    },
+    {
+      "condition": "[parameters('deployDefenderForDns')]",
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2024-01-01",
+      "name": "Dns",
+      "properties": { "pricingTier": "Standard" }
+    },
+    {
+      "condition": "[parameters('deployDefenderForOssDb')]",
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2024-01-01",
+      "name": "OpenSourceRelationalDatabases",
+      "properties": { "pricingTier": "Standard" }
+    },
+    {
+      "condition": "[parameters('deployDefenderForCosmosDb')]",
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2024-01-01",
+      "name": "CosmosDbs",
+      "properties": { "pricingTier": "Standard" }
+    },
+    {
+      "condition": "[parameters('deployDefenderForApis')]",
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2024-01-01",
+      "name": "Api",
+      "properties": { "pricingTier": "Standard" }
+    },
+    {
+      "condition": "[parameters('deployNist80053')]",
+      "type": "Microsoft.Authorization/policyAssignments",
+      "apiVersion": "2022-06-01",
+      "name": "assign-nist-800-53",
+      "properties": {
+        "displayName": "NIST SP 800-53 Rev. 5",
+        "policyDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/179d1daa-458f-4e47-8086-2a68d0d6c38f",
+        "enforcementMode": "DoNotEnforce"
+      }
+    },
+    {
+      "condition": "[parameters('deployNist800171')]",
+      "type": "Microsoft.Authorization/policyAssignments",
+      "apiVersion": "2022-06-01",
+      "name": "assign-nist-800-171",
+      "properties": {
+        "displayName": "NIST SP 800-171 Rev. 2",
+        "policyDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/03055927-78bd-4236-86c0-f36125a10dc9",
+        "enforcementMode": "DoNotEnforce"
+      }
+    },
+    {
+      "condition": "[parameters('deployIl5')]",
+      "type": "Microsoft.Authorization/policyAssignments",
+      "apiVersion": "2022-06-01",
+      "name": "assign-dod-il5",
+      "properties": {
+        "displayName": "DoD Impact Level 5",
+        "policyDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/f9a961fa-3241-4b20-adc4-6b8e936e3a43",
+        "enforcementMode": "DoNotEnforce"
+      }
+    },
+    {
+      "condition": "[parameters('deploySentinel')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[variables('sentinelDeploymentName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName'))]"
+      ],
+      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, split(reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value, '/')[4])]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "workspaceResourceId": { "type": "string" },
+            "workspaceName": { "type": "string" },
+            "location": { "type": "string" }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationsManagement/solutions",
+              "apiVersion": "2015-11-01-preview",
+              "name": "[concat('SecurityInsights(', parameters('workspaceName'), ')')]",
+              "location": "[parameters('location')]",
+              "plan": {
+                "name": "[concat('SecurityInsights(', parameters('workspaceName'), ')')]",
+                "publisher": "Microsoft",
+                "product": "OMSGallery/SecurityInsights",
+                "promotionCode": ""
+              },
+              "properties": {
+                "workspaceResourceId": "[parameters('workspaceResourceId')]"
+              }
+            }
+          ]
+        },
+        "parameters": {
+          "workspaceResourceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value]"
+          },
+          "workspaceName": {
+            "value": "[last(split(reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value, '/'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
           }
         }
       }
