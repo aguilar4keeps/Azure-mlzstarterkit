@@ -3,48 +3,68 @@
   "view": {
     "kind": "Form",
     "properties": {
-      "title": "MLZ AD + Entra One-Shot Deployment",
+      "title": "Mission Landing Zone AD + Entra One-Shot",
       "steps": [
         {
           "name": "basics",
           "label": "Basics",
           "elements": [
             {
-              "name": "scope",
+              "name": "description",
+              "type": "Microsoft.Common.TextBlock",
+              "options": {
+                "text": "Deploys MLZ core hub, Tier3 network, AD lab (1 DC, 2 member servers, 3 clients), Entra VM sign-in, and CSPM sample resources."
+              }
+            },
+            {
+              "name": "resourceScope",
               "type": "Microsoft.Common.ResourceScope",
               "location": {
-                "resourceTypes": []
+                "resourceTypes": [
+                  "Microsoft.Network/virtualNetworks",
+                  "Microsoft.Network/azureFirewalls",
+                  "Microsoft.Network/bastionHosts",
+                  "Microsoft.OperationalInsights/workspaces",
+                  "Microsoft.Compute/virtualMachines",
+                  "Microsoft.Storage/storageAccounts",
+                  "Microsoft.Sql/servers",
+                  "Microsoft.ContainerRegistry/registries"
+                ]
               }
             },
             {
               "name": "identifier",
               "type": "Microsoft.Common.TextBox",
-              "label": "Identifier",
+              "label": "Resource Naming Identifier",
               "toolTip": "1-3 character identifier used in MLZ naming.",
               "constraints": {
                 "required": true,
-                "regex": "^[a-zA-Z0-9]{1,3}$",
-                "validationMessage": "Use 1-3 alphanumeric characters."
+                "validations": [
+                  {
+                    "regex": "^[a-zA-Z0-9]{1,3}$",
+                    "message": "Use 1-3 alphanumeric characters."
+                  }
+                ]
               }
             },
             {
               "name": "environmentAbbreviation",
               "type": "Microsoft.Common.DropDown",
-              "label": "Environment",
-              "defaultValue": "Development (dev)",
+              "label": "Environment Abbreviation",
+              "defaultValue": "dev",
               "constraints": {
                 "required": true,
                 "allowedValues": [
                   {
-                    "label": "Development (dev)",
+                    "label": "dev",
                     "value": "dev"
                   },
                   {
-                    "label": "Test (test)",
+                    "label": "test",
                     "value": "test"
                   },
                   {
-                    "label": "Production (prod)",
+                    "label": "prod",
                     "value": "prod"
                   }
                 ]
@@ -57,8 +77,12 @@
               "toolTip": "1-10 character workload name for Tier3 deployment.",
               "constraints": {
                 "required": true,
-                "regex": "^[a-zA-Z0-9]{1,10}$",
-                "validationMessage": "Use 1-10 alphanumeric characters."
+                "validations": [
+                  {
+                    "regex": "^[a-zA-Z0-9]{1,10}$",
+                    "message": "Use 1-10 alphanumeric characters."
+                  }
+                ]
               }
             },
             {
@@ -68,26 +92,34 @@
               "toolTip": "1-3 character workload short name.",
               "constraints": {
                 "required": true,
-                "regex": "^[a-zA-Z0-9]{1,3}$",
-                "validationMessage": "Use 1-3 alphanumeric characters."
+                "validations": [
+                  {
+                    "regex": "^[a-zA-Z0-9]{1,3}$",
+                    "message": "Use 1-3 alphanumeric characters."
+                  }
+                ]
               }
             },
             {
               "name": "prefix",
               "type": "Microsoft.Common.TextBox",
               "label": "Resource Prefix",
-              "toolTip": "Prefix for VM and sample CSPM resources.",
+              "toolTip": "Prefix for VMs and CSPM resources.",
               "constraints": {
                 "required": true,
-                "regex": "^[a-zA-Z0-9-]{2,15}$",
-                "validationMessage": "Use 2-15 characters (letters, numbers, hyphen)."
+                "validations": [
+                  {
+                    "regex": "^[a-zA-Z0-9-]{2,15}$",
+                    "message": "Use 2-15 characters (letters, numbers, hyphen)."
+                  }
+                ]
               }
             }
           ]
         },
         {
-          "name": "mlzCore",
-          "label": "Core MLZ",
+          "name": "networking",
+          "label": "Networking",
           "elements": [
             {
               "name": "deployBastion",
@@ -96,37 +128,18 @@
               "defaultValue": true
             },
             {
-              "name": "deployDefender",
-              "type": "Microsoft.Common.CheckBox",
-              "label": "Deploy Defender for Cloud",
-              "defaultValue": false
-            },
-            {
-              "name": "deployPolicy",
-              "type": "Microsoft.Common.CheckBox",
-              "label": "Deploy Policy Assignments",
-              "defaultValue": false
-            },
-            {
-              "name": "emailSecurityContact",
-              "type": "Microsoft.Common.TextBox",
-              "label": "Security Contact Email",
-              "defaultValue": "security@example.mil",
-              "constraints": {
-                "required": true,
-                "regex": "^.+@.+\\..+$",
-                "validationMessage": "Enter a valid email address."
-              }
-            },
-            {
               "name": "virtualNetworkAddressPrefix",
               "type": "Microsoft.Common.TextBox",
               "label": "Tier3 Virtual Network CIDR",
               "defaultValue": "10.60.0.0/24",
               "constraints": {
                 "required": true,
-                "regex": "^(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\/(1[0-9]|2[0-8])$",
-                "validationMessage": "Enter a valid CIDR value."
+                "validations": [
+                  {
+                    "regex": "^(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\/(1[0-9]|2[0-8])$",
+                    "message": "Enter a valid CIDR value."
+                  }
+                ]
               }
             },
             {
@@ -136,15 +149,75 @@
               "defaultValue": "10.60.0.0/24",
               "constraints": {
                 "required": true,
-                "regex": "^(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\/(1[0-9]|2[0-8])$",
-                "validationMessage": "Enter a valid CIDR value."
+                "validations": [
+                  {
+                    "regex": "^(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\/(1[0-9]|2[0-8])$",
+                    "message": "Enter a valid CIDR value."
+                  }
+                ]
+              }
+            },
+            {
+              "name": "domainControllerPrivateIp",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Domain Controller Private IP",
+              "defaultValue": "10.60.0.10",
+              "constraints": {
+                "required": true,
+                "validations": [
+                  {
+                    "regex": "^(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)$",
+                    "message": "Enter a valid IPv4 address."
+                  }
+                ]
               }
             }
           ]
         },
         {
-          "name": "adEntra",
-          "label": "AD + Entra",
+          "name": "securityCompliance",
+          "label": "Security and Compliance",
+          "elements": [
+            {
+              "name": "deployDefender",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Deploy Defender for Cloud",
+              "defaultValue": false
+            },
+            {
+              "name": "deployPolicy",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Create policy assignments",
+              "defaultValue": false
+            },
+            {
+              "name": "emailSecurityContact",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Security Contact Email",
+              "defaultValue": "security@example.mil",
+              "constraints": {
+                "required": true,
+                "validations": [
+                  {
+                    "regex": "^.+@.+\\..+$",
+                    "message": "Enter a valid email address."
+                  }
+                ]
+              }
+            },
+            {
+              "name": "cspmNote",
+              "type": "Microsoft.Common.InfoBox",
+              "options": {
+                "style": "Info",
+                "text": "This deployment includes CSPM/CWPP sample coverage resources: SQL DB, Storage + Blob Container, ACR, and a nested Resource Manager deployment."
+              }
+            }
+          ]
+        },
+        {
+          "name": "identity",
+          "label": "Identity",
           "elements": [
             {
               "name": "adminUsername",
@@ -157,17 +230,33 @@
             {
               "name": "adminPassword",
               "type": "Microsoft.Common.PasswordBox",
-              "label": "Admin Password",
+              "label": {
+                "password": "Admin Password",
+                "confirmPassword": "Confirm Admin Password"
+              },
               "constraints": {
-                "required": true
+                "required": true,
+                "regex": "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{12,72}$",
+                "validationMessage": "Use 12-72 chars with upper/lower/number/special."
+              },
+              "options": {
+                "hideConfirmation": false
               }
             },
             {
               "name": "safeModeAdminPassword",
               "type": "Microsoft.Common.PasswordBox",
-              "label": "Safe Mode Admin Password (DSRM)",
+              "label": {
+                "password": "Safe Mode Admin Password (DSRM)",
+                "confirmPassword": "Confirm Safe Mode Admin Password"
+              },
               "constraints": {
-                "required": true
+                "required": true,
+                "regex": "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{12,72}$",
+                "validationMessage": "Use 12-72 chars with upper/lower/number/special."
+              },
+              "options": {
+                "hideConfirmation": false
               }
             },
             {
@@ -194,8 +283,12 @@
               "label": "Entra Principal Object ID",
               "constraints": {
                 "required": true,
-                "regex": "^[0-9a-fA-F-]{36}$",
-                "validationMessage": "Enter a valid GUID."
+                "validations": [
+                  {
+                    "regex": "^[0-9a-fA-F-]{36}$",
+                    "message": "Enter a valid GUID."
+                  }
+                ]
               }
             },
             {
@@ -222,54 +315,240 @@
               }
             },
             {
-              "name": "domainControllerPrivateIp",
-              "type": "Microsoft.Common.TextBox",
-              "label": "Domain Controller Private IP",
-              "defaultValue": "10.60.0.10",
+              "name": "assignVmAdminRole",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Assign Virtual Machine Administrator Login role",
+              "defaultValue": true
+            },
+            {
+              "name": "assignVmUserRole",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Assign Virtual Machine User Login role",
+              "defaultValue": false
+            }
+          ]
+        },
+        {
+          "name": "remoteAccess",
+          "label": "Remote Access",
+          "elements": [
+            {
+              "name": "serverVmSize",
+              "type": "Microsoft.Compute.SizeSelector",
+              "label": "Server VM Size",
+              "toolTip": "Used for DC and member servers.",
+              "recommendedSizes": [
+                "Standard_D4s_v5",
+                "Standard_D2s_v5",
+                "Standard_D8s_v5"
+              ],
+              "options": {
+                "hideDiskTypeFilter": false
+              },
+              "osPlatform": "Windows",
+              "imageReference": {
+                "publisher": "[steps('remoteAccess').serverImagePublisher]",
+                "offer": "[steps('remoteAccess').serverImageOffer]",
+                "sku": "[steps('remoteAccess').serverImageSku]"
+              }
+            },
+            {
+              "name": "clientVmSize",
+              "type": "Microsoft.Compute.SizeSelector",
+              "label": "Client VM Size",
+              "recommendedSizes": [
+                "Standard_D4s_v5",
+                "Standard_D2s_v5"
+              ],
+              "options": {
+                "hideDiskTypeFilter": false
+              },
+              "osPlatform": "Windows",
+              "imageReference": {
+                "publisher": "[steps('remoteAccess').clientImagePublisher]",
+                "offer": "[steps('remoteAccess').clientImageOffer]",
+                "sku": "[steps('remoteAccess').clientImageSku]"
+              }
+            },
+            {
+              "name": "serverImagePublisher",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Server Image Publisher",
+              "defaultValue": "MicrosoftWindowsServer",
               "constraints": {
                 "required": true,
-                "regex": "^(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)$",
-                "validationMessage": "Enter a valid IPv4 address."
+                "allowedValues": [
+                  {
+                    "label": "MicrosoftWindowsServer",
+                    "value": "MicrosoftWindowsServer"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "serverImageOffer",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Server Image Offer",
+              "defaultValue": "WindowsServer",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "WindowsServer",
+                    "value": "WindowsServer"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "serverImageSku",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Server Image SKU",
+              "defaultValue": "2022-datacenter-g2",
+              "toolTip": "Marketplace server image SKU.",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Windows Server 2019 Gen2",
+                    "value": "2019-datacenter-gensecond"
+                  },
+                  {
+                    "label": "Windows Server 2022 Gen2",
+                    "value": "2022-datacenter-g2"
+                  },
+                  {
+                    "label": "Windows Server 2025 Gen2",
+                    "value": "2025-datacenter-azure-edition"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "serverImageVersion",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Server Image Version",
+              "defaultValue": "latest",
+              "toolTip": "Use 'latest' or provide a specific marketplace version.",
+              "constraints": {
+                "required": true
+              }
+            },
+            {
+              "name": "clientImagePublisher",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Client Image Publisher",
+              "defaultValue": "MicrosoftWindowsDesktop",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "MicrosoftWindowsDesktop",
+                    "value": "MicrosoftWindowsDesktop"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "clientImageOffer",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Client Image Offer",
+              "defaultValue": "windows-11",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Windows 11",
+                    "value": "windows-11"
+                  },
+                  {
+                    "label": "Windows 10",
+                    "value": "windows-10"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "clientImageSku",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Client Image SKU",
+              "defaultValue": "win11-23h2-pro",
+              "toolTip": "Marketplace client image SKU.",
+              "constraints": {
+                "required": true,
+                "allowedValues": "[if(equals(steps('remoteAccess').clientImageOffer, 'windows-10'), parse('[{\"label\":\"Windows 10 Pro 22H2\",\"value\":\"win10-22h2-pro\"},{\"label\":\"Windows 10 Enterprise 22H2\",\"value\":\"win10-22h2-ent\"}]'), parse('[{\"label\":\"Windows 11 Pro 23H2\",\"value\":\"win11-23h2-pro\"},{\"label\":\"Windows 11 Enterprise 23H2\",\"value\":\"win11-23h2-ent\"}]'))]"
+              }
+            },
+            {
+              "name": "clientImageVersion",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Client Image Version",
+              "defaultValue": "latest",
+              "toolTip": "Use 'latest' or provide a specific marketplace version.",
+              "constraints": {
+                "required": true
               }
             }
           ]
         },
         {
-          "name": "cspm",
-          "label": "CSPM Coverage",
+          "name": "tags",
+          "label": "Tags",
           "elements": [
             {
-              "name": "description",
-              "type": "Microsoft.Common.TextBlock",
-              "options": {
-                "text": "This deployment will also create one SQL DB, one Storage account + blob container, one Container Registry, and one Resource Manager sample deployment."
-              }
+              "name": "tags",
+              "type": "Microsoft.Common.TagsByResource",
+              "resources": [
+                "Microsoft.Compute/virtualMachines",
+                "Microsoft.Network/virtualNetworks",
+                "Microsoft.Network/azureFirewalls",
+                "Microsoft.Network/bastionHosts",
+                "Microsoft.Storage/storageAccounts",
+                "Microsoft.Sql/servers",
+                "Microsoft.ContainerRegistry/registries"
+              ]
             }
           ]
         }
       ]
     },
     "outputs": {
-      "location": "[steps('basics').scope.location.name]",
-      "identifier": "[steps('basics').identifier]",
-      "environmentAbbreviation": "[steps('basics').environmentAbbreviation]",
-      "workloadName": "[steps('basics').workloadName]",
-      "workloadShortName": "[steps('basics').workloadShortName]",
-      "prefix": "[steps('basics').prefix]",
-      "deployBastion": "[steps('mlzCore').deployBastion]",
-      "deployDefender": "[steps('mlzCore').deployDefender]",
-      "deployPolicy": "[steps('mlzCore').deployPolicy]",
-      "emailSecurityContact": "[steps('mlzCore').emailSecurityContact]",
-      "virtualNetworkAddressPrefix": "[steps('mlzCore').virtualNetworkAddressPrefix]",
-      "subnetAddressPrefix": "[steps('mlzCore').subnetAddressPrefix]",
-      "adminUsername": "[steps('adEntra').adminUsername]",
-      "adminPassword": "[steps('adEntra').adminPassword]",
-      "safeModeAdminPassword": "[steps('adEntra').safeModeAdminPassword]",
-      "domainName": "[steps('adEntra').domainName]",
-      "domainNetbiosName": "[steps('adEntra').domainNetbiosName]",
-      "entraLoginPrincipalId": "[steps('adEntra').entraLoginPrincipalId]",
-      "entraPrincipalType": "[steps('adEntra').entraPrincipalType]",
-      "domainControllerPrivateIp": "[steps('adEntra').domainControllerPrivateIp]"
+      "kind": "Subscription",
+      "location": "[steps('basics').resourceScope.location.name]",
+      "subscriptionId": "[steps('basics').resourceScope.subscription.id]",
+      "parameters": {
+        "identifier": "[steps('basics').identifier]",
+        "environmentAbbreviation": "[steps('basics').environmentAbbreviation]",
+        "workloadName": "[steps('basics').workloadName]",
+        "workloadShortName": "[steps('basics').workloadShortName]",
+        "prefix": "[steps('basics').prefix]",
+        "deployBastion": "[steps('networking').deployBastion]",
+        "deployDefender": "[steps('securityCompliance').deployDefender]",
+        "deployPolicy": "[steps('securityCompliance').deployPolicy]",
+        "emailSecurityContact": "[steps('securityCompliance').emailSecurityContact]",
+        "virtualNetworkAddressPrefix": "[steps('networking').virtualNetworkAddressPrefix]",
+        "subnetAddressPrefix": "[steps('networking').subnetAddressPrefix]",
+        "domainControllerPrivateIp": "[steps('networking').domainControllerPrivateIp]",
+        "adminUsername": "[steps('identity').adminUsername]",
+        "adminPassword": "[steps('identity').adminPassword.password]",
+        "safeModeAdminPassword": "[steps('identity').safeModeAdminPassword.password]",
+        "domainName": "[steps('identity').domainName]",
+        "domainNetbiosName": "[steps('identity').domainNetbiosName]",
+        "entraLoginPrincipalId": "[steps('identity').entraLoginPrincipalId]",
+        "entraPrincipalType": "[steps('identity').entraPrincipalType]",
+        "assignVmAdminRole": "[steps('identity').assignVmAdminRole]",
+        "assignVmUserRole": "[steps('identity').assignVmUserRole]",
+        "serverVmSize": "[steps('remoteAccess').serverVmSize]",
+        "clientVmSize": "[steps('remoteAccess').clientVmSize]",
+        "serverImagePublisher": "[steps('remoteAccess').serverImagePublisher]",
+        "serverImageOffer": "[steps('remoteAccess').serverImageOffer]",
+        "serverImageSku": "[steps('remoteAccess').serverImageSku]",
+        "serverImageVersion": "[steps('remoteAccess').serverImageVersion]",
+        "clientImagePublisher": "[steps('remoteAccess').clientImagePublisher]",
+        "clientImageOffer": "[steps('remoteAccess').clientImageOffer]",
+        "clientImageSku": "[steps('remoteAccess').clientImageSku]",
+        "clientImageVersion": "[steps('remoteAccess').clientImageVersion]"
+      }
     }
   }
 }
