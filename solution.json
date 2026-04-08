@@ -801,8 +801,7 @@
       "name": "[variables('sentinelDeploymentName')]",
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName'))]",
-        "[resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName'))]",
-        "[resourceId('Microsoft.Resources/deployments', variables('workspaceDeploymentName'))]"
+        "[resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName'))]"
       ],
       "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, if(not(empty(parameters('existingWorkspaceResourceId'))), split(parameters('existingWorkspaceResourceId'), '/')[4], variables('tier3ResourceGroupName')))]",
       "properties": {
@@ -835,10 +834,10 @@
         },
         "parameters": {
           "workspaceResourceId": {
-            "value": "[if(not(empty(parameters('existingWorkspaceResourceId'))), parameters('existingWorkspaceResourceId'), if(not(empty(parameters('customWorkspaceName'))), format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.OperationalInsights/workspaces/{2}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName, parameters('customWorkspaceName')), reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value))]"
+            "value": "[if(not(empty(parameters('existingWorkspaceResourceId'))), parameters('existingWorkspaceResourceId'), format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.OperationalInsights/workspaces/{2}', subscription().subscriptionId, variables('tier3ResourceGroupName'), parameters('customWorkspaceName')))]"
           },
           "workspaceName": {
-            "value": "[last(split(if(not(empty(parameters('existingWorkspaceResourceId'))), parameters('existingWorkspaceResourceId'), if(not(empty(parameters('customWorkspaceName'))), format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.OperationalInsights/workspaces/{2}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName, parameters('customWorkspaceName')), reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value)), '/'))]"
+            "value": "[if(not(empty(parameters('existingWorkspaceResourceId'))), last(split(parameters('existingWorkspaceResourceId'), '/')), parameters('customWorkspaceName'))]"
           },
           "location": {
             "value": "[parameters('location')]"
