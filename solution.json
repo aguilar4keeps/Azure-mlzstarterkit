@@ -10,7 +10,7 @@
     },
     "deploymentNameSuffix": {
       "type": "string",
-      "defaultValue": "[utcNow('yyyyMMddHHmmss')]",
+      "defaultValue": "[utcNow()]",
       "metadata": {
         "description": "Suffix used to keep deployment names unique."
       }
