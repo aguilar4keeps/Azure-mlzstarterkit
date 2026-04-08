@@ -314,7 +314,68 @@
     "cspmCoverageDeploymentName": "[format('deploy-cspm-coverage-{0}', parameters('deploymentNameSuffix'))]",
     "sentinelDeploymentName": "[format('deploy-sentinel-{0}', parameters('deploymentNameSuffix'))]",
     "workspaceDeploymentName": "[format('deploy-law-{0}', parameters('deploymentNameSuffix'))]",
-    "entraGroupUniqueName": "[if(empty(parameters('entraGroupName')), format('mlz-{0}-vm-users', parameters('prefix')), parameters('entraGroupName'))]"
+    "entraGroupUniqueName": "[if(empty(parameters('entraGroupName')), format('mlz-{0}-vm-users', parameters('prefix')), parameters('entraGroupName'))]",
+    "locationAbbreviations": {
+      "australiacentral": "auc",
+      "australiacentral2": "auc2",
+      "australiaeast": "aue",
+      "australiasoutheast": "ause",
+      "brazilsouth": "brs",
+      "brazilsoutheast": "brse",
+      "canadacentral": "cac",
+      "canadaeast": "cae",
+      "centralindia": "inc",
+      "centralus": "usc",
+      "eastasia": "ase",
+      "eastus": "use",
+      "eastus2": "use2",
+      "francecentral": "frc",
+      "francesouth": "frs",
+      "germanynorth": "den",
+      "germanywestcentral": "dewc",
+      "israelcentral": "ilc",
+      "italynorth": "itn",
+      "japaneast": "jpe",
+      "japanwest": "jpw",
+      "jioindiacentral": "injc",
+      "jioindiawest": "injw",
+      "koreacentral": "krc",
+      "koreasouth": "krs",
+      "northcentralus": "usnc",
+      "northeurope": "eun",
+      "norwayeast": "noe",
+      "norwaywest": "now",
+      "polandcentral": "plc",
+      "qatarcentral": "qac",
+      "southafricanorth": "zan",
+      "southafricawest": "zaw",
+      "southcentralus": "ussc",
+      "southeastasia": "asse",
+      "southindia": "ins",
+      "swedencentral": "sec",
+      "switzerlandnorth": "chn",
+      "switzerlandwest": "chw",
+      "uaecentral": "aec",
+      "uaenorth": "aen",
+      "uksouth": "uks",
+      "ukwest": "ukw",
+      "westcentralus": "uswc",
+      "westeurope": "euw",
+      "westindia": "inw",
+      "westus": "usw",
+      "westus2": "usw2",
+      "westus3": "usw3",
+      "chinaeast": "cne",
+      "chinaeast2": "cne2",
+      "chinanorth": "cnn",
+      "chinanorth2": "cnn2",
+      "usdodcentral": "dodc",
+      "usdodeast": "dode",
+      "usgovarizona": "az",
+      "usgovtexas": "tx",
+      "usgovvirginia": "va"
+    },
+    "tier3ResourceGroupName": "[format('{0}-{1}-{2}-{3}-rg-network', toLower(parameters('identifier')), parameters('environmentAbbreviation'), variables('locationAbbreviations')[parameters('location')], parameters('workloadName'))]"
   },
   "resources": [
     {
@@ -434,7 +495,7 @@
       "apiVersion": "2025-04-01",
       "name": "[variables('labVmDeploymentName')]",
       "location": "[parameters('location')]",
-      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName)]",
+      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('tier3ResourceGroupName'))]",
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName'))]"
       ],
@@ -536,7 +597,7 @@
       "apiVersion": "2025-04-01",
       "name": "[variables('cspmCoverageDeploymentName')]",
       "location": "[parameters('location')]",
-      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName)]",
+      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('tier3ResourceGroupName'))]",
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName'))]"
       ],
@@ -584,7 +645,7 @@
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName'))]"
       ],
-      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName)]",
+      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('tier3ResourceGroupName'))]",
       "properties": {
         "mode": "Incremental",
         "template": {
@@ -743,7 +804,7 @@
         "[resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName'))]",
         "[resourceId('Microsoft.Resources/deployments', variables('workspaceDeploymentName'))]"
       ],
-      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, split(if(not(empty(parameters('existingWorkspaceResourceId'))), parameters('existingWorkspaceResourceId'), if(not(empty(parameters('customWorkspaceName'))), format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.OperationalInsights/workspaces/{2}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName, parameters('customWorkspaceName')), reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value)), '/')[4])]",
+      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, if(not(empty(parameters('existingWorkspaceResourceId'))), split(parameters('existingWorkspaceResourceId'), '/')[4], variables('tier3ResourceGroupName')))]",
       "properties": {
         "mode": "Incremental",
         "template": {
