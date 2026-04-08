@@ -19,11 +19,11 @@ This starter kit is aligned to Mission Landing Zone and deploys in one shot:
 
 Azure Commercial:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Faguilar4keeps%2FAzure-mlzstarterkit%40f2635ee7dfb669d6c95317e1b86c1760443edf51%2Fsolution.json%3Fv%3D20260408/uiFormDefinitionUri/https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Faguilar4keeps%2FAzure-mlzstarterkit%40f2635ee7dfb669d6c95317e1b86c1760443edf51%2FuiDefinition.json%3Fv%3D20260408)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Faguilar4keeps%2FAzure-mlzstarterkit%404b0030c075fe369716f862ed26512ddf91cf3d48%2Fsolution.json%3Fv%3D20260408/uiFormDefinitionUri/https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Faguilar4keeps%2FAzure-mlzstarterkit%404b0030c075fe369716f862ed26512ddf91cf3d48%2FuiDefinition.json%3Fv%3D20260408)
 
 Azure Government:
 
-[![Deploy to Azure Gov](https://aka.ms/deploytoazuregovbutton)](https://portal.azure.us/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Faguilar4keeps%2FAzure-mlzstarterkit%40f2635ee7dfb669d6c95317e1b86c1760443edf51%2Fsolution.json%3Fv%3D20260408/uiFormDefinitionUri/https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Faguilar4keeps%2FAzure-mlzstarterkit%40f2635ee7dfb669d6c95317e1b86c1760443edf51%2FuiDefinition.json%3Fv%3D20260408)
+[![Deploy to Azure Gov](https://aka.ms/deploytoazuregovbutton)](https://portal.azure.us/#blade/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Faguilar4keeps%2FAzure-mlzstarterkit%404b0030c075fe369716f862ed26512ddf91cf3d48%2Fsolution.json%3Fv%3D20260408/uiFormDefinitionUri/https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Faguilar4keeps%2FAzure-mlzstarterkit%404b0030c075fe369716f862ed26512ddf91cf3d48%2FuiDefinition.json%3Fv%3D20260408)
 
 ## Files
 
