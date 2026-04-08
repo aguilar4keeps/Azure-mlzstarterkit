@@ -315,7 +315,6 @@
     "sentinelDeploymentName": "[format('deploy-sentinel-{0}', parameters('deploymentNameSuffix'))]",
     "workspaceDeploymentName": "[format('deploy-law-{0}', parameters('deploymentNameSuffix'))]",
     "entraGroupUniqueName": "[if(empty(parameters('entraGroupName')), format('mlz-{0}-vm-users', parameters('prefix')), parameters('entraGroupName'))]",
-    "resolvedEntraPrincipalId": "[if(parameters('autoCreateEntraGroup'), reference(resourceId('Microsoft.Graph/groups', variables('entraGroupUniqueName')), '2023-07-01-preview').id, parameters('entraLoginPrincipalId'))]",
     "resolvedWorkspaceResourceId": "[if(not(empty(parameters('existingWorkspaceResourceId'))), parameters('existingWorkspaceResourceId'), if(not(empty(parameters('customWorkspaceName'))), format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.OperationalInsights/workspaces/{2}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName, parameters('customWorkspaceName')), reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value))]"
   },
   "resources": [
@@ -477,7 +476,7 @@
             "value": "[parameters('domainNetbiosName')]"
           },
           "entraLoginPrincipalId": {
-            "value": "[variables('resolvedEntraPrincipalId')]"
+            "value": "[if(parameters('autoCreateEntraGroup'), reference(resourceId('Microsoft.Graph/groups', variables('entraGroupUniqueName')), '2023-07-01-preview').id, parameters('entraLoginPrincipalId'))]"
           },
           "entraPrincipalType": {
             "value": "[parameters('entraPrincipalType')]"
