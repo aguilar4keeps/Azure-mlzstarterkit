@@ -377,35 +377,6 @@
               }
             },
             {
-              "name": "logNote",
-              "type": "Microsoft.Common.InfoBox",
-              "options": {
-                "style": "Info",
-                "text": "MLZ core automatically provisions a Log Analytics workspace in the hub resource group. Expected name pattern: law-hub-{identifier}-{environmentAbbreviation} (e.g. law-hub-mlz-dev). Microsoft Sentinel can be enabled on that workspace, or you can target an existing workspace below."
-              }
-            },
-            {
-              "name": "useExistingWorkspace",
-              "type": "Microsoft.Common.CheckBox",
-              "label": "Target an existing Log Analytics workspace for Sentinel",
-              "toolTip": "If you have an existing workspace you want to enable Sentinel on instead of the MLZ auto-created one, check this and select it below.",
-              "defaultValue": false
-            },
-            {
-              "name": "existingWorkspace",
-              "type": "Microsoft.Solutions.ResourceSelector",
-              "label": "Existing Log Analytics Workspace",
-              "visible": "[steps('securityCompliance').useExistingWorkspace]",
-              "resourceType": "Microsoft.OperationalInsights/workspaces",
-              "toolTip": "Select the existing Log Analytics workspace to use for Sentinel.",
-              "options": {
-                "filter": {
-                  "subscription": "onBasics",
-                  "location": "onBasics"
-                }
-              }
-            },
-            {
               "name": "deployActivityLogDiagnosticSetting",
               "type": "Microsoft.Common.CheckBox",
               "label": "Send Activity Log to Log Analytics",
@@ -416,8 +387,49 @@
               "name": "deploySentinel",
               "type": "Microsoft.Common.CheckBox",
               "label": "Enable Microsoft Sentinel",
-              "toolTip": "Deploys Microsoft Sentinel (cloud-native SIEM/SOAR) on the MLZ hub Log Analytics workspace. Enables threat detection rules, hunting queries, security incidents, and automated playbook response. Per-GB ingestion costs apply.",
+              "toolTip": "Deploys Microsoft Sentinel (cloud-native SIEM/SOAR) on a Log Analytics workspace. A new workspace will be created in the workload resource group unless you select an existing one.",
               "defaultValue": false
+            },
+            {
+              "name": "workspaceOption",
+              "type": "Microsoft.Common.OptionsGroup",
+              "label": "Log Analytics Workspace",
+              "visible": "[steps('securityCompliance').deploySentinel]",
+              "defaultValue": "new",
+              "constraints": {
+                "allowedValues": [
+                  { "label": "Create a new workspace", "value": "new" },
+                  { "label": "Use an existing workspace", "value": "existing" }
+                ]
+              }
+            },
+            {
+              "name": "newWorkspaceName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "New workspace name",
+              "visible": "[and(steps('securityCompliance').deploySentinel, equals(steps('securityCompliance').workspaceOption, 'new'))]",
+              "defaultValue": "[concat('law-', steps('basics').workloadShortName)]",
+              "toolTip": "Name for the new Log Analytics workspace. Will be created in the workload tier3 resource group alongside the VMs.",
+              "placeholder": "e.g. law-adlab",
+              "constraints": {
+                "required": "[and(steps('securityCompliance').deploySentinel, equals(steps('securityCompliance').workspaceOption, 'new'))]",
+                "regex": "^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]$",
+                "validationMessage": "3–63 characters, letters/numbers/hyphens only, must start and end with a letter or number."
+              }
+            },
+            {
+              "name": "existingWorkspace",
+              "type": "Microsoft.Solutions.ResourceSelector",
+              "label": "Existing Log Analytics Workspace",
+              "visible": "[and(steps('securityCompliance').deploySentinel, equals(steps('securityCompliance').workspaceOption, 'existing'))]",
+              "resourceType": "Microsoft.OperationalInsights/workspaces",
+              "toolTip": "Select the Log Analytics workspace to enable Sentinel on.",
+              "options": {
+                "filter": {
+                  "subscription": "onBasics",
+                  "location": "onBasics"
+                }
+              }
             },
             {
               "name": "cspmNote",
@@ -867,7 +879,8 @@
         "entraGroupName": "[steps('identity').entraGroupName]",
         "entraLoginPrincipalId": "[if(steps('identity').autoCreateEntraGroup, '', steps('identity').entraLoginPrincipalId)]",
         "entraPrincipalType": "[if(steps('identity').autoCreateEntraGroup, 'Group', steps('identity').entraPrincipalType)]",
-        "existingWorkspaceResourceId": "[if(steps('securityCompliance').useExistingWorkspace, steps('securityCompliance').existingWorkspace.id, '')]",
+        "customWorkspaceName": "[if(and(steps('securityCompliance').deploySentinel, equals(steps('securityCompliance').workspaceOption, 'new')), steps('securityCompliance').newWorkspaceName, '')]",
+        "existingWorkspaceResourceId": "[if(and(steps('securityCompliance').deploySentinel, equals(steps('securityCompliance').workspaceOption, 'existing')), steps('securityCompliance').existingWorkspace.id, '')]",
         "assignVmAdminRole": "[steps('identity').assignVmAdminRole]",
         "assignVmUserRole": "[steps('identity').assignVmUserRole]",
         "serverVmSize": "[steps('remoteAccess').serverVmSize]",
