@@ -747,6 +747,56 @@
                   { "label": "Standard_D4s_v4 (4 vCPUs, 16 GiB)", "value": "Standard_D4s_v4" }
                 ]
               }
+            },
+            {
+              "name": "linuxHeader",
+              "type": "Microsoft.Common.TextBlock",
+              "options": {
+                "style": "Heading",
+                "text": "Linux VM (Optional)"
+              }
+            },
+            {
+              "name": "deployLinuxVm",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Deploy a Linux VM into the workload subnet",
+              "toolTip": "Deploys one additional Linux VM (prefix-lnx01) into the same Tier3 subnet. Gets Entra SSH login and, if MDE onboarding is enabled on the Security tab, the MDE.Linux extension. No domain join — Linux VM is standalone.",
+              "defaultValue": false
+            },
+            {
+              "name": "linuxFlavor",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Linux Distribution",
+              "visible": "[steps('remoteAccess').deployLinuxVm]",
+              "defaultValue": "Ubuntu Server 22.04 LTS (recommended)",
+              "toolTip": "Select the Linux distro. All options use Gen2 images with Trusted Launch.",
+              "constraints": {
+                "required": "[steps('remoteAccess').deployLinuxVm]",
+                "allowedValues": [
+                  { "label": "Ubuntu Server 22.04 LTS (recommended)", "value": "ubuntu-2204" },
+                  { "label": "Ubuntu Server 24.04 LTS", "value": "ubuntu-2404" },
+                  { "label": "Red Hat Enterprise Linux 9", "value": "rhel-9" },
+                  { "label": "Debian 12", "value": "debian-12" }
+                ]
+              }
+            },
+            {
+              "name": "linuxVmSize",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Linux VM Size",
+              "visible": "[steps('remoteAccess').deployLinuxVm]",
+              "defaultValue": "Standard_D2s_v5 (2 vCPUs, 8 GiB) — recommended",
+              "toolTip": "VM size for the Linux VM. Standard_D2s_v5 is sufficient for most lab workloads.",
+              "constraints": {
+                "required": "[steps('remoteAccess').deployLinuxVm]",
+                "allowedValues": [
+                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB) — recommended", "value": "Standard_D2s_v5" },
+                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB)", "value": "Standard_D4s_v5" },
+                  { "label": "Standard_D8s_v5 (8 vCPUs, 32 GiB)", "value": "Standard_D8s_v5" },
+                  { "label": "Standard_B2s (2 vCPUs, 4 GiB) — budget", "value": "Standard_B2s" },
+                  { "label": "Standard_B4ms (4 vCPUs, 16 GiB) — budget", "value": "Standard_B4ms" }
+                ]
+              }
             }
           ]
         },
@@ -829,7 +879,10 @@
         "clientImagePublisher": "[steps('remoteAccess').clientImagePublisher]",
         "clientImageOffer": "[steps('remoteAccess').clientImageOffer]",
         "clientImageSku": "[steps('remoteAccess').clientImageSku]",
-        "clientImageVersion": "[steps('remoteAccess').clientImageVersion]"
+        "clientImageVersion": "[steps('remoteAccess').clientImageVersion]",
+        "deployLinuxVm": "[steps('remoteAccess').deployLinuxVm]",
+        "linuxFlavor": "[if(steps('remoteAccess').deployLinuxVm, steps('remoteAccess').linuxFlavor, 'ubuntu-2204')]",
+        "linuxVmSize": "[if(steps('remoteAccess').deployLinuxVm, steps('remoteAccess').linuxVmSize, 'Standard_D2s_v5')]"
       }
     }
   }

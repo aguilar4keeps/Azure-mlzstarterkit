@@ -293,6 +293,18 @@
     "deployMde": {
       "type": "bool",
       "defaultValue": false
+    },
+    "deployLinuxVm": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "linuxVmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2s_v5"
+    },
+    "linuxFlavor": {
+      "type": "string",
+      "defaultValue": "ubuntu-2204"
     }
   },
   "variables": {
@@ -508,6 +520,15 @@
           },
           "deployMde": {
             "value": "[parameters('deployMde')]"
+          },
+          "deployLinuxVm": {
+            "value": "[parameters('deployLinuxVm')]"
+          },
+          "linuxVmSize": {
+            "value": "[parameters('linuxVmSize')]"
+          },
+          "linuxFlavor": {
+            "value": "[parameters('linuxFlavor')]"
           }
         }
       }
