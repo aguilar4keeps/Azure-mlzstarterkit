@@ -289,6 +289,10 @@
     "clientImageVersion": {
       "type": "string",
       "defaultValue": "latest"
+    },
+    "deployMde": {
+      "type": "bool",
+      "defaultValue": false
     }
   },
   "variables": {
@@ -501,6 +505,9 @@
           },
           "clientImageVersion": {
             "value": "[parameters('clientImageVersion')]"
+          },
+          "deployMde": {
+            "value": "[parameters('deployMde')]"
           }
         }
       }

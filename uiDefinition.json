@@ -248,6 +248,13 @@
               }
             },
             {
+              "name": "deployMde",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Onboard VMs to Microsoft Defender for Endpoint (MDE) at provisioning time",
+              "toolTip": "Deploys the MDE.Windows extension to all 6 VMs (DC, member servers, clients) immediately at deploy time — no wait for Defender for Cloud's async onboarding. If Defender for Servers is also enabled, Defender for Cloud will detect the extension is already installed and skip re-onboarding. Recommended when you need immediate MDE coverage.",
+              "defaultValue": false
+            },
+            {
               "name": "deployDefenderForStorage",
               "type": "Microsoft.Common.CheckBox",
               "label": "Defender for Storage",
@@ -777,6 +784,7 @@
         "deployBastion": "[steps('networking').deployBastion]",
         "location": "[steps('basics').resourceScope.location.name]",
         "deployActivityLogDiagnosticSetting": "[steps('securityCompliance').deployActivityLogDiagnosticSetting]",
+        "deployMde": "[steps('securityCompliance').deployMde]",
         "deployDefender": "[steps('securityCompliance').deployDefender]",
         "deployDefenderCspm": "[steps('securityCompliance').deployDefenderCspm]",
         "deployDefenderForServers": "[steps('securityCompliance').deployDefenderForServers]",

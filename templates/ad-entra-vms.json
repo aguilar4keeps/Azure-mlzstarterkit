@@ -176,6 +176,13 @@
       "metadata": {
         "description": "Client image version."
       }
+    },
+    "deployMde": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Deploy the MDE.Windows extension to onboard all VMs to Microsoft Defender for Endpoint at provisioning time."
+      }
     }
   },
   "variables": {
@@ -410,6 +417,30 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDefinitions')[copyIndex()].name)]"
+      ]
+    },
+    {
+      "copy": {
+        "name": "mdeExtensions",
+        "count": "[length(variables('vmDefinitions'))]"
+      },
+      "condition": "[parameters('deployMde')]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2024-11-01",
+      "name": "[format('{0}/{1}', variables('vmDefinitions')[copyIndex()].name, 'MDE.Windows')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "publisher": "Microsoft.Azure.AzureDefenderForServers",
+        "type": "MDE.Windows",
+        "typeHandlerVersion": "1.0",
+        "autoUpgradeMinorVersion": true,
+        "enableAutomaticUpgrade": true,
+        "settings": {
+          "forceReOnboarding": false
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('vmDefinitions')[copyIndex()].name, 'AADLoginForWindows')]"
       ]
     },
     {
