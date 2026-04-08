@@ -374,7 +374,24 @@
               "type": "Microsoft.Common.InfoBox",
               "options": {
                 "style": "Info",
-                "text": "MLZ core automatically provisions a Log Analytics workspace in the hub resource group. Expected name pattern: law-hub-{identifier}-{environmentAbbreviation} (e.g. law-hub-mlz-dev). Microsoft Sentinel can be enabled on that workspace, or you can target an existing workspace below."
+                "text": "MLZ core automatically provisions a Log Analytics workspace. Expected name: law-hub-{identifier}-{environmentAbbreviation} (e.g. law-hub-mlz-dev). You can also create a new named workspace or select an existing one below."
+              }
+            },
+            {
+              "name": "customWorkspaceName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Custom Log Analytics Workspace Name (optional)",
+              "visible": "[not(steps('securityCompliance').useExistingWorkspace)]",
+              "placeholder": "e.g. law-workload-prod",
+              "toolTip": "Leave blank to use the MLZ auto-created hub workspace (law-hub-{identifier}-{env}). If you enter a name here, a new dedicated workspace is created in the workload resource group with this exact name and used for Sentinel.",
+              "constraints": {
+                "required": false,
+                "validations": [
+                  {
+                    "isValid": "[or(empty(steps('securityCompliance').customWorkspaceName), regex(steps('securityCompliance').customWorkspaceName, '^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]$'))]",
+                    "message": "Workspace name must be 3-63 chars: letters, numbers, and hyphens. Cannot start or end with a hyphen."
+                  }
+                ]
               }
             },
             {
@@ -425,9 +442,103 @@
               "type": "Microsoft.Common.InfoBox",
               "options": {
                 "style": "Info",
-                "text": "CSPM resource names are auto-generated from a deterministic hash of the workload resource group ID and the Prefix you set on the Basics tab. You cannot predict them before deployment, but they are stable across re-deploys.\n\nNaming pattern (all in workload RG):\n• Storage account: st[hash] (up to 24 chars)\n• Blob container: coverage-container (always)\n• Container Registry: acr[hash] (up to 50 chars)\n• SQL Server: sql-[hash]\n• SQL Database: defenderdb (always)\n\nAfter deployment, find all names on the 'Outputs' tab of the deployment, or browse the workload resource group in the portal."
+                "text": "By default, CSPM resource names are auto-generated (deterministic hash of resource group + Prefix). Enable the toggle below to set custom names. All resources deploy into the workload resource group. Exact names always appear on the Outputs tab after deployment."
+              }
+            },
+            {
+              "name": "customizeCspmNames",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Customize CSPM resource names",
+              "toolTip": "Override the auto-generated names for Storage, ACR, SQL Server, SQL Database, and the Blob container.",
+              "defaultValue": false
+            },
+            {
+              "name": "cspmStorageAccountName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Storage Account Name",
+              "visible": "[steps('securityCompliance').customizeCspmNames]",
+              "placeholder": "e.g. stcspmworkload01",
+              "toolTip": "3-24 characters, lowercase letters and numbers only. No hyphens. Must be globally unique.",
+              "constraints": {
+                "required": false,
+                "validations": [
+                  {
+                    "isValid": "[or(empty(steps('securityCompliance').cspmStorageAccountName), regex(steps('securityCompliance').cspmStorageAccountName, '^[a-z0-9]{3,24}$'))]",
+                    "message": "3-24 lowercase alphanumeric characters only — no hyphens or uppercase."
+                  }
+                ]
+              }
+            },
+            {
+              "name": "cspmBlobContainerName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Blob Container Name",
+              "visible": "[steps('securityCompliance').customizeCspmNames]",
+              "defaultValue": "coverage-container",
+              "toolTip": "3-63 characters: lowercase letters, numbers, and hyphens.",
+              "constraints": {
+                "required": false,
+                "validations": [
+                  {
+                    "isValid": "[or(empty(steps('securityCompliance').cspmBlobContainerName), regex(steps('securityCompliance').cspmBlobContainerName, '^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$'))]",
+                    "message": "3-63 lowercase letters, numbers, or hyphens. Cannot start or end with a hyphen."
+                  }
+                ]
+              }
+            },
+            {
+              "name": "cspmAcrName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Container Registry Name",
+              "visible": "[steps('securityCompliance').customizeCspmNames]",
+              "placeholder": "e.g. acrworkloadprod",
+              "toolTip": "5-50 alphanumeric characters. Must be globally unique.",
+              "constraints": {
+                "required": false,
+                "validations": [
+                  {
+                    "isValid": "[or(empty(steps('securityCompliance').cspmAcrName), regex(steps('securityCompliance').cspmAcrName, '^[a-zA-Z0-9]{5,50}$'))]",
+                    "message": "5-50 alphanumeric characters only — no hyphens."
+                  }
+                ]
+              }
+            },
+            {
+              "name": "cspmSqlServerName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "SQL Server Name",
+              "visible": "[steps('securityCompliance').customizeCspmNames]",
+              "placeholder": "e.g. sql-workload-prod",
+              "toolTip": "1-63 characters: lowercase letters, numbers, and hyphens. Must be globally unique.",
+              "constraints": {
+                "required": false,
+                "validations": [
+                  {
+                    "isValid": "[or(empty(steps('securityCompliance').cspmSqlServerName), regex(steps('securityCompliance').cspmSqlServerName, '^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$'))]",
+                    "message": "1-63 lowercase letters, numbers, or hyphens. Cannot start or end with a hyphen."
+                  }
+                ]
+              }
+            },
+            {
+              "name": "cspmSqlDatabaseName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "SQL Database Name",
+              "visible": "[steps('securityCompliance').customizeCspmNames]",
+              "defaultValue": "defenderdb",
+              "toolTip": "1-128 characters. Letters, numbers, underscores, hyphens.",
+              "constraints": {
+                "required": false,
+                "validations": [
+                  {
+                    "isValid": "[or(empty(steps('securityCompliance').cspmSqlDatabaseName), regex(steps('securityCompliance').cspmSqlDatabaseName, '^[a-zA-Z0-9_-]{1,128}$'))]",
+                    "message": "1-128 characters: letters, numbers, underscores, hyphens."
+                  }
+                ]
               }
             }
+          ]
+        },
           ]
         },
         {
@@ -810,6 +921,12 @@
         "entraLoginPrincipalId": "[if(steps('identity').autoCreateEntraGroup, '', steps('identity').entraLoginPrincipalId)]",
         "entraPrincipalType": "[if(steps('identity').autoCreateEntraGroup, 'Group', steps('identity').entraPrincipalType)]",
         "existingWorkspaceResourceId": "[if(steps('securityCompliance').useExistingWorkspace, steps('securityCompliance').existingWorkspace.id, '')]",
+        "customWorkspaceName": "[if(steps('securityCompliance').useExistingWorkspace, '', steps('securityCompliance').customWorkspaceName)]",
+        "cspmStorageAccountName": "[if(steps('securityCompliance').customizeCspmNames, steps('securityCompliance').cspmStorageAccountName, '')]",
+        "cspmBlobContainerName": "[if(steps('securityCompliance').customizeCspmNames, steps('securityCompliance').cspmBlobContainerName, '')]",
+        "cspmAcrName": "[if(steps('securityCompliance').customizeCspmNames, steps('securityCompliance').cspmAcrName, '')]",
+        "cspmSqlServerName": "[if(steps('securityCompliance').customizeCspmNames, steps('securityCompliance').cspmSqlServerName, '')]",
+        "cspmSqlDatabaseName": "[if(steps('securityCompliance').customizeCspmNames, steps('securityCompliance').cspmSqlDatabaseName, '')]",
         "assignVmAdminRole": "[steps('identity').assignVmAdminRole]",
         "assignVmUserRole": "[steps('identity').assignVmUserRole]",
         "serverVmSize": "[steps('remoteAccess').serverVmSize]",
