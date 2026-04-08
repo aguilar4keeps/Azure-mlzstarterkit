@@ -184,6 +184,48 @@
         "description": "Resource ID of an existing Log Analytics workspace. Leave empty to use the MLZ-provisioned workspace."
       }
     },
+    "customWorkspaceName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional custom name for a new Log Analytics workspace created in the workload resource group."
+      }
+    },
+    "cspmStorageAccountName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional custom Storage account name (3-24 chars, lowercase alphanumeric only)."
+      }
+    },
+    "cspmAcrName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional custom Container Registry name (5-50 chars, alphanumeric)."
+      }
+    },
+    "cspmSqlServerName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional custom SQL Server name (1-63 chars, lowercase, numbers, hyphens)."
+      }
+    },
+    "cspmSqlDatabaseName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional custom SQL Database name. Defaults to 'defenderdb'."
+      }
+    },
+    "cspmBlobContainerName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional custom Blob container name. Defaults to 'coverage-container'."
+      }
+    },
     "entraLoginPrincipalId": {
       "type": "string",
       "defaultValue": "",
@@ -255,9 +297,10 @@
     "labVmDeploymentName": "[format('deploy-ad-entra-vms-{0}', parameters('deploymentNameSuffix'))]",
     "cspmCoverageDeploymentName": "[format('deploy-cspm-coverage-{0}', parameters('deploymentNameSuffix'))]",
     "sentinelDeploymentName": "[format('deploy-sentinel-{0}', parameters('deploymentNameSuffix'))]",
+    "workspaceDeploymentName": "[format('deploy-law-{0}', parameters('deploymentNameSuffix'))]",
     "entraGroupUniqueName": "[if(empty(parameters('entraGroupName')), format('mlz-{0}-vm-users', parameters('prefix')), parameters('entraGroupName'))]",
     "resolvedEntraPrincipalId": "[if(parameters('autoCreateEntraGroup'), reference(resourceId('Microsoft.Graph/groups', variables('entraGroupUniqueName')), '2023-07-01-preview').id, parameters('entraLoginPrincipalId'))]",
-    "resolvedWorkspaceResourceId": "[if(empty(parameters('existingWorkspaceResourceId')), reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value, parameters('existingWorkspaceResourceId'))]"
+    "resolvedWorkspaceResourceId": "[if(not(empty(parameters('existingWorkspaceResourceId'))), parameters('existingWorkspaceResourceId'), if(not(empty(parameters('customWorkspaceName'))), format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.OperationalInsights/workspaces/{2}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName, parameters('customWorkspaceName')), reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value))]"
   },
   "resources": [
     {
@@ -488,7 +531,59 @@
           },
           "sqlAdminPassword": {
             "value": "[parameters('adminPassword')]"
+          },
+          "customStorageAccountName": {
+            "value": "[parameters('cspmStorageAccountName')]"
+          },
+          "customAcrName": {
+            "value": "[parameters('cspmAcrName')]"
+          },
+          "customSqlServerName": {
+            "value": "[parameters('cspmSqlServerName')]"
+          },
+          "customSqlDatabaseName": {
+            "value": "[parameters('cspmSqlDatabaseName')]"
+          },
+          "customBlobContainerName": {
+            "value": "[parameters('cspmBlobContainerName')]"
           }
+        }
+      }
+    },
+    {
+      "condition": "[and(not(empty(parameters('customWorkspaceName'))), empty(parameters('existingWorkspaceResourceId')))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[variables('workspaceDeploymentName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName'))]"
+      ],
+      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName)]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "workspaceName": { "type": "string" },
+            "location": { "type": "string" }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2023-09-01",
+              "name": "[parameters('workspaceName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": { "name": "PerGB2018" },
+                "retentionInDays": 90
+              }
+            }
+          ]
+        },
+        "parameters": {
+          "workspaceName": { "value": "[parameters('customWorkspaceName')]" },
+          "location": { "value": "[parameters('location')]" }
         }
       }
     },
@@ -618,7 +713,9 @@
       "apiVersion": "2025-04-01",
       "name": "[variables('sentinelDeploymentName')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName'))]"
+        "[resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName'))]",
+        "[resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName'))]",
+        "[resourceId('Microsoft.Resources/deployments', variables('workspaceDeploymentName'))]"
       ],
       "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, split(variables('resolvedWorkspaceResourceId'), '/')[4])]",
       "properties": {
