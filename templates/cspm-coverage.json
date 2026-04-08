@@ -3,8 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "location": {
-      "type": "string",
-      "defaultValue": "[resourceGroup().location]"
+      "type": "string"
     },
     "namePrefix": {
       "type": "string"
@@ -42,7 +41,7 @@
     }
   },
   "variables": {
-    "unique": "[toLower(uniqueString(resourceGroup().id, parameters('namePrefix')))]",
+    "unique": "[toLower(uniqueString(subscription().subscriptionId, parameters('namePrefix')))]",
     "storageAccountName": "[if(empty(parameters('customStorageAccountName')), take(concat('st', variables('unique')), 24), parameters('customStorageAccountName'))]",
     "containerRegistryName": "[if(empty(parameters('customAcrName')), take(concat('acr', variables('unique')), 50), parameters('customAcrName'))]",
     "sqlServerName": "[if(empty(parameters('customSqlServerName')), concat('sql-', variables('unique')), parameters('customSqlServerName'))]",
