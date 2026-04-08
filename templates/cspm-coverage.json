@@ -113,6 +113,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2025-04-01",
       "name": "cspm-rm-sample",
+      "location": "[parameters('location')]",
       "properties": {
         "mode": "Incremental",
         "template": {
