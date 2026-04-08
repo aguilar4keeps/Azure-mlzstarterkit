@@ -374,7 +374,28 @@
               "type": "Microsoft.Common.InfoBox",
               "options": {
                 "style": "Info",
-                "text": "MLZ core automatically provisions a Log Analytics workspace in the hub resource group. Microsoft Sentinel can be enabled on that workspace. Sentinel has separate data ingestion and retention costs."
+                "text": "MLZ core automatically provisions a Log Analytics workspace in the hub resource group. Expected name pattern: law-hub-{identifier}-{environmentAbbreviation} (e.g. law-hub-mlz-dev). Microsoft Sentinel can be enabled on that workspace, or you can target an existing workspace below."
+              }
+            },
+            {
+              "name": "useExistingWorkspace",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Target an existing Log Analytics workspace for Sentinel",
+              "toolTip": "If you have an existing workspace you want to enable Sentinel on instead of the MLZ auto-created one, check this and select it below.",
+              "defaultValue": false
+            },
+            {
+              "name": "existingWorkspace",
+              "type": "Microsoft.Solutions.ResourceSelector",
+              "label": "Existing Log Analytics Workspace",
+              "visible": "[steps('securityCompliance').useExistingWorkspace]",
+              "resourceType": "Microsoft.OperationalInsights/workspaces",
+              "toolTip": "Select the existing Log Analytics workspace to use for Sentinel.",
+              "options": {
+                "filter": {
+                  "subscription": "onBasics",
+                  "location": "onBasics"
+                }
               }
             },
             {
@@ -397,6 +418,14 @@
               "options": {
                 "style": "Info",
                 "text": "This deployment includes CSPM/CWPP sample coverage resources (SQL DB, Storage + Blob, ACR, and a nested ARM deployment) useful for validating Defender alerts and compliance controls."
+              }
+            },
+            {
+              "name": "cspmNamingNote",
+              "type": "Microsoft.Common.InfoBox",
+              "options": {
+                "style": "Info",
+                "text": "CSPM resource names are auto-generated from a deterministic hash of the workload resource group ID and the Prefix you set on the Basics tab. You cannot predict them before deployment, but they are stable across re-deploys.\n\nNaming pattern (all in workload RG):\n• Storage account: st[hash] (up to 24 chars)\n• Blob container: coverage-container (always)\n• Container Registry: acr[hash] (up to 50 chars)\n• SQL Server: sql-[hash]\n• SQL Database: defenderdb (always)\n\nAfter deployment, find all names on the 'Outputs' tab of the deployment, or browse the workload resource group in the portal."
               }
             }
           ]
@@ -464,16 +493,52 @@
               }
             },
             {
+              "name": "entraAccessHeader",
+              "type": "Microsoft.Common.TextBlock",
+              "options": {
+                "style": "Heading",
+                "text": "Entra VM Login Access"
+              }
+            },
+            {
+              "name": "autoCreateEntraGroup",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Auto-create a new Entra security group for VM access",
+              "toolTip": "Creates a new Entra ID security group during deployment and assigns it VM Login access on all VMs. Requires the deployment service principal to have Microsoft Graph group creation permissions (GroupMember.ReadWrite.All). Recommended for new environments.",
+              "defaultValue": false
+            },
+            {
+              "name": "entraGroupNote",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": "[steps('identity').autoCreateEntraGroup]",
+              "options": {
+                "style": "Info",
+                "text": "A new security group will be created in Entra ID and assigned the VM Administrator Login role on all deployed VMs. After deployment, add users to this group in the Azure Portal: Microsoft Entra ID > Groups > find the group > Members > Add."
+              }
+            },
+            {
+              "name": "entraGroupName",
+              "type": "Microsoft.Common.TextBox",
+              "label": "New Security Group Name",
+              "visible": "[steps('identity').autoCreateEntraGroup]",
+              "toolTip": "Display name for the new Entra security group. Will default to mlz-{prefix}-vm-users if left blank.",
+              "placeholder": "e.g. mlz-lab-vm-users",
+              "constraints": {
+                "required": false
+              }
+            },
+            {
               "name": "entraLoginPrincipalId",
               "type": "Microsoft.Common.TextBox",
               "label": "Entra Principal Object ID",
-              "toolTip": "The Object ID (GUID) of the Entra ID user, group, or service principal that will receive VM Login access to all deployed VMs. To find it: Azure Portal > Microsoft Entra ID > Users (or Groups) > select your account/group > copy the 'Object ID' value. Recommended: use a security group so you can manage membership without redeploying.",
+              "visible": "[not(steps('identity').autoCreateEntraGroup)]",
+              "toolTip": "Object ID (GUID) of an existing Entra ID user, group, or service principal for VM Login access. Find it: Azure Portal > Microsoft Entra ID > Users or Groups > select your account/group > copy Object ID. Using a security group is recommended — add/remove members without redeploying.",
               "placeholder": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
               "constraints": {
-                "required": true,
+                "required": "[not(steps('identity').autoCreateEntraGroup)]",
                 "validations": [
                   {
-                    "regex": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    "isValid": "[or(steps('identity').autoCreateEntraGroup, regex(steps('identity').entraLoginPrincipalId, '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))]",
                     "message": "Enter a valid GUID in the format xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx."
                   }
                 ]
@@ -483,10 +548,11 @@
               "name": "entraPrincipalType",
               "type": "Microsoft.Common.DropDown",
               "label": "Entra Principal Type",
+              "visible": "[not(steps('identity').autoCreateEntraGroup)]",
               "defaultValue": "Group (recommended — assign access to a security group)",
-              "toolTip": "Must match the type of the Object ID above. Group = security group (recommended — add/remove members without redeploying). User = individual Entra ID user account. ServicePrincipal = app registration or managed identity.",
+              "toolTip": "Must match the type of the Object ID above. Group = security group (add/remove members without redeploying). User = individual Entra ID account. ServicePrincipal = app registration or managed identity.",
               "constraints": {
-                "required": true,
+                "required": "[not(steps('identity').autoCreateEntraGroup)]",
                 "allowedValues": [
                   {
                     "label": "Group (recommended — assign access to a security group)",
@@ -519,7 +585,7 @@
         },
         {
           "name": "remoteAccess",
-          "label": "Remote Access",
+          "label": "Compute",
           "elements": [
             {
               "name": "serverImagePublisher",
@@ -739,8 +805,11 @@
         "safeModeAdminPassword": "[steps('identity').safeModeAdminPassword.password]",
         "domainName": "[steps('identity').domainName]",
         "domainNetbiosName": "[steps('identity').domainNetbiosName]",
-        "entraLoginPrincipalId": "[steps('identity').entraLoginPrincipalId]",
-        "entraPrincipalType": "[steps('identity').entraPrincipalType]",
+        "autoCreateEntraGroup": "[steps('identity').autoCreateEntraGroup]",
+        "entraGroupName": "[steps('identity').entraGroupName]",
+        "entraLoginPrincipalId": "[if(steps('identity').autoCreateEntraGroup, '', steps('identity').entraLoginPrincipalId)]",
+        "entraPrincipalType": "[if(steps('identity').autoCreateEntraGroup, 'Group', steps('identity').entraPrincipalType)]",
+        "existingWorkspaceResourceId": "[if(steps('securityCompliance').useExistingWorkspace, steps('securityCompliance').existingWorkspace.id, '')]",
         "assignVmAdminRole": "[steps('identity').assignVmAdminRole]",
         "assignVmUserRole": "[steps('identity').assignVmUserRole]",
         "serverVmSize": "[steps('remoteAccess').serverVmSize]",
