@@ -89,13 +89,14 @@
               "name": "workloadShortName",
               "type": "Microsoft.Common.TextBox",
               "label": "Workload Short Name",
-              "toolTip": "1-3 character workload short name.",
+              "placeholder": "e.g. id1, t3, ops",
+              "toolTip": "1-3 alphanumeric characters used in Tier3 resource naming. Examples: 'id1' for identity, 't3' for tier3, 'ops' for operations. This appears in resource group and resource names.",
               "constraints": {
                 "required": true,
                 "validations": [
                   {
                     "regex": "^[a-zA-Z0-9]{1,3}$",
-                    "message": "Use 1-3 alphanumeric characters."
+                    "message": "Use 1-3 alphanumeric characters (e.g. id1, t3, ops)."
                   }
                 ]
               }
@@ -287,12 +288,14 @@
               "name": "entraLoginPrincipalId",
               "type": "Microsoft.Common.TextBox",
               "label": "Entra Principal Object ID",
+              "toolTip": "The Object ID (GUID) of the Entra ID user, group, or service principal that will receive VM Login access to all deployed VMs. To find it: Azure Portal > Microsoft Entra ID > Users (or Groups) > select your account/group > copy the 'Object ID' value. Recommended: use a security group so you can manage membership without redeploying.",
+              "placeholder": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
               "constraints": {
                 "required": true,
                 "validations": [
                   {
-                    "regex": "^[0-9a-fA-F-]{36}$",
-                    "message": "Enter a valid GUID."
+                    "regex": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    "message": "Enter a valid GUID in the format xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx."
                   }
                 ]
               }
@@ -301,20 +304,21 @@
               "name": "entraPrincipalType",
               "type": "Microsoft.Common.DropDown",
               "label": "Entra Principal Type",
-              "defaultValue": "Group",
+              "defaultValue": "Group (recommended — assign access to a security group)",
+              "toolTip": "Must match the type of the Object ID above. Group = security group (recommended — add/remove members without redeploying). User = individual Entra ID user account. ServicePrincipal = app registration or managed identity.",
               "constraints": {
                 "required": true,
                 "allowedValues": [
                   {
-                    "label": "Group",
+                    "label": "Group (recommended — assign access to a security group)",
                     "value": "Group"
                   },
                   {
-                    "label": "User",
+                    "label": "User (individual Entra ID account)",
                     "value": "User"
                   },
                   {
-                    "label": "Service Principal",
+                    "label": "Service Principal (app registration or managed identity)",
                     "value": "ServicePrincipal"
                   }
                 ]
@@ -372,8 +376,8 @@
               "name": "serverImageSku",
               "type": "Microsoft.Common.DropDown",
               "label": "Server Image SKU",
-              "defaultValue": "2022-datacenter-g2",
-              "toolTip": "Marketplace server image SKU.",
+              "defaultValue": "Windows Server 2022 Gen2",
+              "toolTip": "Marketplace server image SKU. Windows Server 2022 Gen2 is recommended for most deployments.",
               "constraints": {
                 "required": true,
                 "allowedValues": [
@@ -406,15 +410,15 @@
               "name": "serverVmSize",
               "type": "Microsoft.Common.DropDown",
               "label": "Server VM Size",
-              "toolTip": "Used for DC and member servers.",
-              "defaultValue": "Standard_D4s_v5",
+              "toolTip": "VM size for the domain controller and member servers. For a small lab environment, Standard_D2s_v5 is sufficient. Standard_D4s_v5 is recommended for production-like workloads.",
+              "defaultValue": "Standard_D4s_v5 (4 vCPUs, 16 GiB) — recommended",
               "constraints": {
                 "required": true,
                 "allowedValues": [
-                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB)", "value": "Standard_D2s_v5" },
-                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB)", "value": "Standard_D4s_v5" },
-                  { "label": "Standard_D8s_v5 (8 vCPUs, 32 GiB)", "value": "Standard_D8s_v5" },
-                  { "label": "Standard_D16s_v5 (16 vCPUs, 64 GiB)", "value": "Standard_D16s_v5" },
+                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB) — small lab / dev", "value": "Standard_D2s_v5" },
+                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB) — recommended", "value": "Standard_D4s_v5" },
+                  { "label": "Standard_D8s_v5 (8 vCPUs, 32 GiB) — medium workload", "value": "Standard_D8s_v5" },
+                  { "label": "Standard_D16s_v5 (16 vCPUs, 64 GiB) — large workload", "value": "Standard_D16s_v5" },
                   { "label": "Standard_D2s_v4 (2 vCPUs, 8 GiB)", "value": "Standard_D2s_v4" },
                   { "label": "Standard_D4s_v4 (4 vCPUs, 16 GiB)", "value": "Standard_D4s_v4" }
                 ]
@@ -479,13 +483,14 @@
               "name": "clientVmSize",
               "type": "Microsoft.Common.DropDown",
               "label": "Client VM Size",
-              "defaultValue": "Standard_D4s_v5",
+              "toolTip": "VM size for the 3 Windows client workstations. Standard_D2s_v5 is sufficient for a small lab. Standard_D4s_v5 is recommended if running heavier desktop workloads.",
+              "defaultValue": "Standard_D4s_v5 (4 vCPUs, 16 GiB) — recommended",
               "constraints": {
                 "required": true,
                 "allowedValues": [
-                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB)", "value": "Standard_D2s_v5" },
-                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB)", "value": "Standard_D4s_v5" },
-                  { "label": "Standard_D8s_v5 (8 vCPUs, 32 GiB)", "value": "Standard_D8s_v5" },
+                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB) — small lab / dev", "value": "Standard_D2s_v5" },
+                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB) — recommended", "value": "Standard_D4s_v5" },
+                  { "label": "Standard_D8s_v5 (8 vCPUs, 32 GiB) — medium workload", "value": "Standard_D8s_v5" },
                   { "label": "Standard_D2s_v4 (2 vCPUs, 8 GiB)", "value": "Standard_D2s_v4" },
                   { "label": "Standard_D4s_v4 (4 vCPUs, 16 GiB)", "value": "Standard_D4s_v4" }
                 ]
