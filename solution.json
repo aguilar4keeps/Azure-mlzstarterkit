@@ -314,8 +314,7 @@
     "cspmCoverageDeploymentName": "[format('deploy-cspm-coverage-{0}', parameters('deploymentNameSuffix'))]",
     "sentinelDeploymentName": "[format('deploy-sentinel-{0}', parameters('deploymentNameSuffix'))]",
     "workspaceDeploymentName": "[format('deploy-law-{0}', parameters('deploymentNameSuffix'))]",
-    "entraGroupUniqueName": "[if(empty(parameters('entraGroupName')), format('mlz-{0}-vm-users', parameters('prefix')), parameters('entraGroupName'))]",
-    "resolvedWorkspaceResourceId": "[if(not(empty(parameters('existingWorkspaceResourceId'))), parameters('existingWorkspaceResourceId'), if(not(empty(parameters('customWorkspaceName'))), format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.OperationalInsights/workspaces/{2}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName, parameters('customWorkspaceName')), reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value))]"
+    "entraGroupUniqueName": "[if(empty(parameters('entraGroupName')), format('mlz-{0}-vm-users', parameters('prefix')), parameters('entraGroupName'))]"
   },
   "resources": [
     {
@@ -744,7 +743,7 @@
         "[resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName'))]",
         "[resourceId('Microsoft.Resources/deployments', variables('workspaceDeploymentName'))]"
       ],
-      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, split(variables('resolvedWorkspaceResourceId'), '/')[4])]",
+      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, split(if(not(empty(parameters('existingWorkspaceResourceId'))), parameters('existingWorkspaceResourceId'), if(not(empty(parameters('customWorkspaceName'))), format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.OperationalInsights/workspaces/{2}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName, parameters('customWorkspaceName')), reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value)), '/')[4])]",
       "properties": {
         "mode": "Incremental",
         "template": {
@@ -775,10 +774,10 @@
         },
         "parameters": {
           "workspaceResourceId": {
-            "value": "[variables('resolvedWorkspaceResourceId')]"
+            "value": "[if(not(empty(parameters('existingWorkspaceResourceId'))), parameters('existingWorkspaceResourceId'), if(not(empty(parameters('customWorkspaceName'))), format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.OperationalInsights/workspaces/{2}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName, parameters('customWorkspaceName')), reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value))]"
           },
           "workspaceName": {
-            "value": "[last(split(variables('resolvedWorkspaceResourceId'), '/'))]"
+            "value": "[last(split(if(not(empty(parameters('existingWorkspaceResourceId'))), parameters('existingWorkspaceResourceId'), if(not(empty(parameters('customWorkspaceName'))), format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.OperationalInsights/workspaces/{2}', subscription().subscriptionId, reference(resourceId('Microsoft.Resources/deployments', variables('tier3DeploymentName')), '2025-04-01').outputs.tier.value.resourceGroupName, parameters('customWorkspaceName')), reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value)), '/'))]"
           },
           "location": {
             "value": "[parameters('location')]"
