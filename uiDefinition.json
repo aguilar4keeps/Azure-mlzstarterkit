@@ -180,28 +180,11 @@
           "label": "Security and Compliance",
           "elements": [
             {
-              "name": "deployActivityLogDiagnosticSetting",
-              "type": "Microsoft.Common.CheckBox",
-              "label": "Deploy Activity Log Diagnostic Setting",
-              "defaultValue": false
-            },
-            {
-              "name": "deployDefender",
-              "type": "Microsoft.Common.CheckBox",
-              "label": "Deploy Defender for Cloud",
-              "defaultValue": false
-            },
-            {
-              "name": "deployPolicy",
-              "type": "Microsoft.Common.CheckBox",
-              "label": "Create policy assignments",
-              "defaultValue": false
-            },
-            {
               "name": "emailSecurityContact",
               "type": "Microsoft.Common.TextBox",
               "label": "Security Contact Email",
               "defaultValue": "security@example.mil",
+              "toolTip": "Email address for Defender for Cloud security alerts and recommendations.",
               "constraints": {
                 "required": true,
                 "validations": [
@@ -213,11 +196,207 @@
               }
             },
             {
+              "name": "defenderHeader",
+              "type": "Microsoft.Common.TextBlock",
+              "options": {
+                "style": "Heading",
+                "text": "Microsoft Defender for Cloud"
+              }
+            },
+            {
+              "name": "defenderCostNote",
+              "type": "Microsoft.Common.InfoBox",
+              "options": {
+                "style": "Warning",
+                "text": "Each Defender plan is billed separately. Review Azure Defender pricing before enabling plans in a production subscription."
+              }
+            },
+            {
+              "name": "deployDefender",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Enable Defender for Cloud (base)",
+              "toolTip": "Enables the Defender for Cloud service and configures the security contact. Required before individual plans take effect.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployDefenderCspm",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Defender CSPM — Cloud Security Posture Management",
+              "toolTip": "Agentless posture management: attack path analysis, cloud security graph, agentless vulnerability assessment, and regulatory compliance dashboard. No per-VM agent required. Recommended for broad visibility.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployDefenderForServers",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Defender for Servers",
+              "toolTip": "Threat protection for Windows and Linux VMs. P1 includes Microsoft Defender for Endpoint (MDE) integration only. P2 adds agentless scanning, file integrity monitoring, JIT VM access, and adaptive application controls.",
+              "defaultValue": false
+            },
+            {
+              "name": "defenderForServersSubPlan",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Defender for Servers Plan",
+              "visible": "[steps('securityCompliance').deployDefenderForServers]",
+              "defaultValue": "P2 — Full Protection (recommended)",
+              "toolTip": "P1: MDE integration only. P2: Full protection including vulnerability assessment, JIT VM access, and file integrity monitoring.",
+              "constraints": {
+                "required": "[steps('securityCompliance').deployDefenderForServers]",
+                "allowedValues": [
+                  { "label": "P1 — Defender for Endpoint integration only", "value": "P1" },
+                  { "label": "P2 — Full Protection (recommended)", "value": "P2" }
+                ]
+              }
+            },
+            {
+              "name": "deployDefenderForStorage",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Defender for Storage",
+              "toolTip": "Detects malware uploads, anomalous access, and sensitive data exposure in Storage accounts. Priced per storage account.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployDefenderForSql",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Defender for SQL",
+              "toolTip": "Threat protection for SQL Server on Azure VMs and Arc-enabled machines. Detects SQL injection, brute force, and anomalous access.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployDefenderForContainers",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Defender for Containers",
+              "toolTip": "Protects AKS clusters and Azure Container Registry (ACR). Includes container image vulnerability assessment and run-time threat detection.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployDefenderForAppService",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Defender for App Service",
+              "toolTip": "Detects exploit attempts, malicious connections, and suspicious processes in App Service plans.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployDefenderForKeyVault",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Defender for Key Vault",
+              "toolTip": "Alerts on suspicious Key Vault access: TOR exit node access, unusual geolocation, high-volume secret enumeration, and credential theft patterns.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployDefenderForArm",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Defender for Resource Manager",
+              "toolTip": "Monitors all ARM management-plane operations for lateral movement, privilege escalation, suspicious tool usage, and cryptomining via automation accounts.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployDefenderForDns",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Defender for DNS",
+              "toolTip": "Detects DNS-based threats: data exfiltration via DNS tunneling, C2 beaconing, and malicious domain resolution from Azure resources.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployDefenderForOssDb",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Defender for Open-Source Relational Databases",
+              "toolTip": "Threat protection for Azure Database for PostgreSQL, MySQL, and MariaDB. Detects SQL injection and anomalous access.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployDefenderForCosmosDb",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Defender for Azure Cosmos DB",
+              "toolTip": "Detects SQL injection, anomalous access patterns, and potential data exfiltration from Cosmos DB accounts.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployDefenderForApis",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Defender for APIs",
+              "toolTip": "API security posture and runtime threat protection for APIs published through Azure API Management (APIM).",
+              "defaultValue": false
+            },
+            {
+              "name": "policyHeader",
+              "type": "Microsoft.Common.TextBlock",
+              "options": {
+                "style": "Heading",
+                "text": "Policy Assignments"
+              }
+            },
+            {
+              "name": "policyNote",
+              "type": "Microsoft.Common.InfoBox",
+              "options": {
+                "style": "Info",
+                "text": "All initiatives are assigned in DoNotEnforce (audit-only) mode — they surface compliance gaps in the Defender for Cloud dashboard without blocking deployments. NIST 800-53 and IL5 are required for FedRAMP and DoD authorization packages."
+              }
+            },
+            {
+              "name": "deployPolicy",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Apply MLZ Built-in Policy Set",
+              "toolTip": "Deploys Mission Landing Zone built-in policy assignments covering SCCA-aligned controls for hub/spoke networking, logging, and access management.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployNist80053",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "NIST SP 800-53 Rev. 5",
+              "toolTip": "Assigns the built-in NIST SP 800-53 Rev. 5 regulatory compliance initiative. Covers 20 control families (AC, AU, CM, IA, SC, SI). Required for FedRAMP Moderate and High authorization.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployNist800171",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "NIST SP 800-171 Rev. 2",
+              "toolTip": "Assigns the built-in NIST SP 800-171 Rev. 2 initiative for protection of Controlled Unclassified Information (CUI). Required for DFARS 252.204-7012 compliance and CMMC Level 2.",
+              "defaultValue": false
+            },
+            {
+              "name": "deployIl5",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "DoD Impact Level 5 (IL5) — Azure Government only",
+              "toolTip": "Assigns the DoD IL5 regulatory compliance initiative for National Security Systems and CUI up to SECRET. Only applicable in Azure Government regions.",
+              "defaultValue": false
+            },
+            {
+              "name": "logHeader",
+              "type": "Microsoft.Common.TextBlock",
+              "options": {
+                "style": "Heading",
+                "text": "Logging and SIEM"
+              }
+            },
+            {
+              "name": "logNote",
+              "type": "Microsoft.Common.InfoBox",
+              "options": {
+                "style": "Info",
+                "text": "MLZ core automatically provisions a Log Analytics workspace in the hub resource group. Microsoft Sentinel can be enabled on that workspace. Sentinel has separate data ingestion and retention costs."
+              }
+            },
+            {
+              "name": "deployActivityLogDiagnosticSetting",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Send Activity Log to Log Analytics",
+              "toolTip": "Sends Azure subscription Activity Log (ARM deployments, RBAC changes, policy events, service health) to the MLZ Log Analytics workspace for long-term retention and querying.",
+              "defaultValue": false
+            },
+            {
+              "name": "deploySentinel",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Enable Microsoft Sentinel",
+              "toolTip": "Deploys Microsoft Sentinel (cloud-native SIEM/SOAR) on the MLZ hub Log Analytics workspace. Enables threat detection rules, hunting queries, security incidents, and automated playbook response. Per-GB ingestion costs apply.",
+              "defaultValue": false
+            },
+            {
               "name": "cspmNote",
               "type": "Microsoft.Common.InfoBox",
               "options": {
                 "style": "Info",
-                "text": "This deployment includes CSPM/CWPP sample coverage resources: SQL DB, Storage + Blob Container, ACR, and a nested Resource Manager deployment."
+                "text": "This deployment includes CSPM/CWPP sample coverage resources (SQL DB, Storage + Blob, ACR, and a nested ARM deployment) useful for validating Defender alerts and compliance controls."
               }
             }
           ]
@@ -533,7 +712,24 @@
         "location": "[steps('basics').resourceScope.location.name]",
         "deployActivityLogDiagnosticSetting": "[steps('securityCompliance').deployActivityLogDiagnosticSetting]",
         "deployDefender": "[steps('securityCompliance').deployDefender]",
+        "deployDefenderCspm": "[steps('securityCompliance').deployDefenderCspm]",
+        "deployDefenderForServers": "[steps('securityCompliance').deployDefenderForServers]",
+        "defenderForServersSubPlan": "[if(steps('securityCompliance').deployDefenderForServers, steps('securityCompliance').defenderForServersSubPlan, 'P2')]",
+        "deployDefenderForStorage": "[steps('securityCompliance').deployDefenderForStorage]",
+        "deployDefenderForSql": "[steps('securityCompliance').deployDefenderForSql]",
+        "deployDefenderForContainers": "[steps('securityCompliance').deployDefenderForContainers]",
+        "deployDefenderForAppService": "[steps('securityCompliance').deployDefenderForAppService]",
+        "deployDefenderForKeyVault": "[steps('securityCompliance').deployDefenderForKeyVault]",
+        "deployDefenderForArm": "[steps('securityCompliance').deployDefenderForArm]",
+        "deployDefenderForDns": "[steps('securityCompliance').deployDefenderForDns]",
+        "deployDefenderForOssDb": "[steps('securityCompliance').deployDefenderForOssDb]",
+        "deployDefenderForCosmosDb": "[steps('securityCompliance').deployDefenderForCosmosDb]",
+        "deployDefenderForApis": "[steps('securityCompliance').deployDefenderForApis]",
         "deployPolicy": "[steps('securityCompliance').deployPolicy]",
+        "deployNist80053": "[steps('securityCompliance').deployNist80053]",
+        "deployNist800171": "[steps('securityCompliance').deployNist800171]",
+        "deployIl5": "[steps('securityCompliance').deployIl5]",
+        "deploySentinel": "[steps('securityCompliance').deploySentinel]",
         "emailSecurityContact": "[steps('securityCompliance').emailSecurityContact]",
         "virtualNetworkAddressPrefix": "[steps('networking').virtualNetworkAddressPrefix]",
         "subnetAddressPrefix": "[steps('networking').subnetAddressPrefix]",
