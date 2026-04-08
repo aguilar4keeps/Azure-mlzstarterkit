@@ -163,8 +163,33 @@
     "domainNetbiosName": {
       "type": "string"
     },
+    "autoCreateEntraGroup": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "When true, creates a new Entra security group and uses its Object ID for VM login RBAC."
+      }
+    },
+    "entraGroupName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Display name for the auto-created Entra security group. Used only when autoCreateEntraGroup is true."
+      }
+    },
+    "existingWorkspaceResourceId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Resource ID of an existing Log Analytics workspace. Leave empty to use the MLZ-provisioned workspace."
+      }
+    },
     "entraLoginPrincipalId": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Object ID of the Entra user, group, or service principal for VM login. Leave empty when autoCreateEntraGroup is true."
+      }
     },
     "entraPrincipalType": {
       "type": "string",
@@ -229,7 +254,10 @@
     "tier3DeploymentName": "[format('deploy-tier3-{0}', parameters('deploymentNameSuffix'))]",
     "labVmDeploymentName": "[format('deploy-ad-entra-vms-{0}', parameters('deploymentNameSuffix'))]",
     "cspmCoverageDeploymentName": "[format('deploy-cspm-coverage-{0}', parameters('deploymentNameSuffix'))]",
-    "sentinelDeploymentName": "[format('deploy-sentinel-{0}', parameters('deploymentNameSuffix'))]"
+    "sentinelDeploymentName": "[format('deploy-sentinel-{0}', parameters('deploymentNameSuffix'))]",
+    "entraGroupUniqueName": "[if(empty(parameters('entraGroupName')), format('mlz-{0}-vm-users', parameters('prefix')), parameters('entraGroupName'))]",
+    "resolvedEntraPrincipalId": "[if(parameters('autoCreateEntraGroup'), reference(resourceId('Microsoft.Graph/groups', variables('entraGroupUniqueName')), '2023-07-01-preview').id, parameters('entraLoginPrincipalId'))]",
+    "resolvedWorkspaceResourceId": "[if(empty(parameters('existingWorkspaceResourceId')), reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value, parameters('existingWorkspaceResourceId'))]"
   },
   "resources": [
     {
@@ -390,7 +418,7 @@
             "value": "[parameters('domainNetbiosName')]"
           },
           "entraLoginPrincipalId": {
-            "value": "[parameters('entraLoginPrincipalId')]"
+            "value": "[variables('resolvedEntraPrincipalId')]"
           },
           "entraPrincipalType": {
             "value": "[parameters('entraPrincipalType')]"
@@ -592,7 +620,7 @@
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName'))]"
       ],
-      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, split(reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value, '/')[4])]",
+      "scope": "[format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, split(variables('resolvedWorkspaceResourceId'), '/')[4])]",
       "properties": {
         "mode": "Incremental",
         "template": {
@@ -623,16 +651,26 @@
         },
         "parameters": {
           "workspaceResourceId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value]"
+            "value": "[variables('resolvedWorkspaceResourceId')]"
           },
           "workspaceName": {
-            "value": "[last(split(reference(resourceId('Microsoft.Resources/deployments', variables('coreDeploymentName')), '2025-04-01').outputs.logAnalyticsWorkspaceResourceId.value, '/'))]"
+            "value": "[last(split(variables('resolvedWorkspaceResourceId'), '/'))]"
           },
           "location": {
             "value": "[parameters('location')]"
           }
         }
       }
+    },
+    {
+      "condition": "[parameters('autoCreateEntraGroup')]",
+      "type": "Microsoft.Graph/groups",
+      "apiVersion": "2023-07-01-preview",
+      "uniqueName": "[variables('entraGroupUniqueName')]",
+      "displayName": "[variables('entraGroupUniqueName')]",
+      "mailEnabled": false,
+      "mailNickname": "[variables('entraGroupUniqueName')]",
+      "securityEnabled": true
     }
   ],
   "outputs": {
