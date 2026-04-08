@@ -179,6 +179,12 @@
           "label": "Security and Compliance",
           "elements": [
             {
+              "name": "deployActivityLogDiagnosticSetting",
+              "type": "Microsoft.Common.CheckBox",
+              "label": "Deploy Activity Log Diagnostic Setting",
+              "defaultValue": false
+            },
+            {
               "name": "deployDefender",
               "type": "Microsoft.Common.CheckBox",
               "label": "Deploy Defender for Cloud",
@@ -333,44 +339,6 @@
           "label": "Remote Access",
           "elements": [
             {
-              "name": "serverVmSize",
-              "type": "Microsoft.Compute.SizeSelector",
-              "label": "Server VM Size",
-              "toolTip": "Used for DC and member servers.",
-              "recommendedSizes": [
-                "Standard_D4s_v5",
-                "Standard_D2s_v5",
-                "Standard_D8s_v5"
-              ],
-              "options": {
-                "hideDiskTypeFilter": false
-              },
-              "osPlatform": "Windows",
-              "imageReference": {
-                "publisher": "[steps('remoteAccess').serverImagePublisher]",
-                "offer": "[steps('remoteAccess').serverImageOffer]",
-                "sku": "[steps('remoteAccess').serverImageSku]"
-              }
-            },
-            {
-              "name": "clientVmSize",
-              "type": "Microsoft.Compute.SizeSelector",
-              "label": "Client VM Size",
-              "recommendedSizes": [
-                "Standard_D4s_v5",
-                "Standard_D2s_v5"
-              ],
-              "options": {
-                "hideDiskTypeFilter": false
-              },
-              "osPlatform": "Windows",
-              "imageReference": {
-                "publisher": "[steps('remoteAccess').clientImagePublisher]",
-                "offer": "[steps('remoteAccess').clientImageOffer]",
-                "sku": "[steps('remoteAccess').clientImageSku]"
-              }
-            },
-            {
               "name": "serverImagePublisher",
               "type": "Microsoft.Common.DropDown",
               "label": "Server Image Publisher",
@@ -435,6 +403,24 @@
               }
             },
             {
+              "name": "serverVmSize",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Server VM Size",
+              "toolTip": "Used for DC and member servers.",
+              "defaultValue": "Standard_D4s_v5",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB)", "value": "Standard_D2s_v5" },
+                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB)", "value": "Standard_D4s_v5" },
+                  { "label": "Standard_D8s_v5 (8 vCPUs, 32 GiB)", "value": "Standard_D8s_v5" },
+                  { "label": "Standard_D16s_v5 (16 vCPUs, 64 GiB)", "value": "Standard_D16s_v5" },
+                  { "label": "Standard_D2s_v4 (2 vCPUs, 8 GiB)", "value": "Standard_D2s_v4" },
+                  { "label": "Standard_D4s_v4 (4 vCPUs, 16 GiB)", "value": "Standard_D4s_v4" }
+                ]
+              }
+            },
+            {
               "name": "clientImagePublisher",
               "type": "Microsoft.Common.DropDown",
               "label": "Client Image Publisher",
@@ -488,6 +474,22 @@
               "constraints": {
                 "required": true
               }
+            },
+            {
+              "name": "clientVmSize",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Client VM Size",
+              "defaultValue": "Standard_D4s_v5",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB)", "value": "Standard_D2s_v5" },
+                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB)", "value": "Standard_D4s_v5" },
+                  { "label": "Standard_D8s_v5 (8 vCPUs, 32 GiB)", "value": "Standard_D8s_v5" },
+                  { "label": "Standard_D2s_v4 (2 vCPUs, 8 GiB)", "value": "Standard_D2s_v4" },
+                  { "label": "Standard_D4s_v4 (4 vCPUs, 16 GiB)", "value": "Standard_D4s_v4" }
+                ]
+              }
             }
           ]
         },
@@ -523,6 +525,8 @@
         "workloadShortName": "[steps('basics').workloadShortName]",
         "prefix": "[steps('basics').prefix]",
         "deployBastion": "[steps('networking').deployBastion]",
+        "location": "[steps('basics').resourceScope.location.name]",
+        "deployActivityLogDiagnosticSetting": "[steps('securityCompliance').deployActivityLogDiagnosticSetting]",
         "deployDefender": "[steps('securityCompliance').deployDefender]",
         "deployPolicy": "[steps('securityCompliance').deployPolicy]",
         "emailSecurityContact": "[steps('securityCompliance').emailSecurityContact]",
