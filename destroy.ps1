@@ -3,10 +3,10 @@
     Destroys all resources created by the MLZ AD + Entra Starter Kit deployment.
 
 .DESCRIPTION
-    Removes all resource groups, subscription-level Defender plans, policy
-    assignments, and optionally the Entra security group created by the starter kit.
-    Uses the same input parameters as the deployment so RG names are computed
-    identically to how they were created.
+    Discovers and removes all resource groups whose names start with the MLZ
+    naming prefix, subscription-level Defender plans, policy assignments, and
+    optionally the Entra security group. Uses dynamic discovery so it works
+    regardless of exact MLZ RG naming internals.
 
 .PARAMETER SubscriptionId
     The Azure subscription ID where the deployment was made.
@@ -20,25 +20,27 @@
 .PARAMETER Location
     The Azure region used during deployment (e.g. "eastus", "usgovvirginia").
 
-.PARAMETER WorkloadName
-    The workload name used during deployment (e.g. "adlab").
-
 .PARAMETER EntraGroupName
-    Optional. The Entra security group name to delete. If not provided the group
-    is not deleted.
+    Optional. The Entra security group name to delete.
 
 .PARAMETER RemoveDefenderPlans
-    Switch. If set, removes all Defender for Cloud plan assignments at subscription scope.
+    Switch. Resets all Defender for Cloud plans to Free tier.
 
 .PARAMETER RemovePolicyAssignments
-    Switch. If set, removes NIST/IL5 policy assignments created by the deployment.
+    Switch. Removes NIST/IL5 policy assignments created by the deployment.
 
 .PARAMETER Force
     Switch. Skips confirmation prompts.
 
 .EXAMPLE
+    # Preview what will be deleted (no -Force, answers 'no' to confirm)
+    .\destroy.ps1 -SubscriptionId "xxxx" -Identifier "mlz" -EnvironmentAbbreviation "dev" -Location "eastus"
+
+.EXAMPLE
+    # Full teardown
     .\destroy.ps1 -SubscriptionId "xxxx" -Identifier "mlz" -EnvironmentAbbreviation "dev" `
-        -Location "eastus" -WorkloadName "adlab" -RemoveDefenderPlans -RemovePolicyAssignments
+        -Location "eastus" -EntraGroupName "mlz-lab-vm-users" `
+        -RemoveDefenderPlans -RemovePolicyAssignments -Force
 #>
 
 [CmdletBinding(SupportsShouldProcess)]
@@ -54,9 +56,6 @@ param(
 
     [Parameter(Mandatory)]
     [string]$Location,
-
-    [Parameter(Mandatory)]
-    [string]$WorkloadName,
 
     [string]$EntraGroupName = "",
 
@@ -97,33 +96,17 @@ $locationAbbreviations = @{
 }
 
 if (-not $locationAbbreviations.ContainsKey($Location.ToLower())) {
-    Write-Error "Unknown location '$Location'. Add it to the locationAbbreviations map."
+    Write-Error "Unknown location '$Location'. Add it to the locationAbbreviations map in destroy.ps1."
     exit 1
 }
 
-$locAbbr   = $locationAbbreviations[$Location.ToLower()]
-$idLower   = $Identifier.ToLower()
-$nameBase  = "$idLower-$EnvironmentAbbreviation-$locAbbr"
+$locAbbr  = $locationAbbreviations[$Location.ToLower()]
+$idLower  = $Identifier.ToLower()
+# All MLZ RGs start with this prefix: e.g. "mlz-dev-use-"
+$rgPrefix = "$idLower-$EnvironmentAbbreviation-$locAbbr-"
 
 # ---------------------------------------------------------------------------
-# Resource groups created by this deployment
-# MLZ core creates: hub-rg-network, hub-rg-operations, t0-rg-network,
-# t1-rg-network, t2-rg-network (and the workload tier3 rg-network)
-# The workload/tier3 RG is where VMs, CSPM, Sentinel LAW land.
-# ---------------------------------------------------------------------------
-$mlzCoreRgs = @(
-    "$nameBase-hub-rg-network",
-    "$nameBase-hub-rg-operations",
-    "$nameBase-t0-rg-network",
-    "$nameBase-t1-rg-network",
-    "$nameBase-t2-rg-network"
-)
-$workloadRg = "$nameBase-$WorkloadName-rg-network"
-
-$allRgs = $mlzCoreRgs + @($workloadRg)
-
-# ---------------------------------------------------------------------------
-# Defender plans enabled by this deployment
+# Defender plans that may have been enabled
 # ---------------------------------------------------------------------------
 $defenderPlans = @(
     "CloudPosture", "VirtualMachines", "StorageAccounts", "SqlServerVirtualMachines",
@@ -141,7 +124,7 @@ $policyAssignments = @(
 )
 
 # ---------------------------------------------------------------------------
-# Pre-flight
+# Set subscription context
 # ---------------------------------------------------------------------------
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
@@ -152,13 +135,32 @@ Write-Host "Subscription : $SubscriptionId"
 Write-Host "Identifier   : $Identifier"
 Write-Host "Environment  : $EnvironmentAbbreviation"
 Write-Host "Location     : $Location ($locAbbr)"
-Write-Host "Workload     : $WorkloadName"
+Write-Host "RG prefix    : $rgPrefix"
 Write-Host ""
-Write-Host "Resource groups to delete:" -ForegroundColor Yellow
-$allRgs | ForEach-Object { Write-Host "  - $_" }
-if ($RemoveDefenderPlans)     { Write-Host "Defender plans will be reset to Free" -ForegroundColor Yellow }
-if ($RemovePolicyAssignments) { Write-Host "Policy assignments will be removed" -ForegroundColor Yellow }
-if ($EntraGroupName)          { Write-Host "Entra group '$EntraGroupName' will be deleted" -ForegroundColor Yellow }
+
+Write-Host "Setting subscription context..." -ForegroundColor Cyan
+az account set --subscription $SubscriptionId
+if ($LASTEXITCODE -ne 0) { Write-Error "Failed to set subscription context."; exit 1 }
+
+# ---------------------------------------------------------------------------
+# Discover all matching resource groups dynamically
+# ---------------------------------------------------------------------------
+Write-Host "Discovering resource groups with prefix '$rgPrefix'..." -ForegroundColor Cyan
+$discoveredRgsJson = az group list --query "[?starts_with(name,'$rgPrefix')].name" -o json 2>$null
+$discoveredRgs = $discoveredRgsJson | ConvertFrom-Json
+
+if ($discoveredRgs.Count -eq 0) {
+    Write-Host "  No resource groups found matching prefix '$rgPrefix'." -ForegroundColor Yellow
+    Write-Host "  Nothing to delete. Verify your Identifier/EnvironmentAbbreviation/Location inputs." -ForegroundColor Yellow
+} else {
+    Write-Host ""
+    Write-Host "Found $($discoveredRgs.Count) resource group(s) to delete:" -ForegroundColor Yellow
+    $discoveredRgs | ForEach-Object { Write-Host "  - $_" -ForegroundColor White }
+}
+
+if ($RemoveDefenderPlans)     { Write-Host "  + Defender for Cloud plans will be reset to Free" -ForegroundColor Yellow }
+if ($RemovePolicyAssignments) { Write-Host "  + Policy assignments will be removed" -ForegroundColor Yellow }
+if ($EntraGroupName)          { Write-Host "  + Entra group '$EntraGroupName' will be deleted" -ForegroundColor Yellow }
 Write-Host ""
 
 if (-not $Force) {
@@ -169,37 +171,27 @@ if (-not $Force) {
     }
 }
 
-# Set subscription context
-Write-Host "`nSetting subscription context..." -ForegroundColor Cyan
-az account set --subscription $SubscriptionId
-if ($LASTEXITCODE -ne 0) { Write-Error "Failed to set subscription context."; exit 1 }
-
 # ---------------------------------------------------------------------------
-# 1. Delete resource groups (parallel for speed)
+# 1. Delete resource groups in parallel
 # ---------------------------------------------------------------------------
 Write-Host "`n[1/4] Deleting resource groups..." -ForegroundColor Cyan
 
 $jobs = @()
-foreach ($rg in $allRgs) {
-    $exists = az group show --name $rg --query "name" -o tsv 2>$null
-    if ($exists) {
-        Write-Host "  Queuing deletion: $rg" -ForegroundColor Yellow
-        $jobs += Start-Job -ScriptBlock {
-            param($rg, $sub)
-            az group delete --name $rg --subscription $sub --yes --no-wait 2>&1
-        } -ArgumentList $rg, $SubscriptionId
-    } else {
-        Write-Host "  Not found (skipping): $rg" -ForegroundColor Gray
-    }
+foreach ($rg in $discoveredRgs) {
+    Write-Host "  Queuing deletion: $rg" -ForegroundColor Yellow
+    $jobs += Start-Job -ScriptBlock {
+        param($rgName, $sub)
+        az group delete --name $rgName --subscription $sub --yes 2>&1
+    } -ArgumentList $rg, $SubscriptionId
 }
 
 if ($jobs.Count -gt 0) {
-    Write-Host "  Waiting for deletions to complete (this can take 10-20 minutes)..." -ForegroundColor Yellow
+    Write-Host "  Waiting for all deletions to complete (can take 15-30 minutes)..." -ForegroundColor Yellow
     $jobs | Wait-Job | Receive-Job
     $jobs | Remove-Job
-    Write-Host "  Resource group deletions initiated." -ForegroundColor Green
+    Write-Host "  All resource group deletions completed." -ForegroundColor Green
 } else {
-    Write-Host "  No resource groups found to delete." -ForegroundColor Gray
+    Write-Host "  No resource groups to delete." -ForegroundColor Gray
 }
 
 # ---------------------------------------------------------------------------
@@ -208,12 +200,11 @@ if ($jobs.Count -gt 0) {
 if ($RemoveDefenderPlans) {
     Write-Host "`n[2/4] Resetting Defender for Cloud plans to Free..." -ForegroundColor Cyan
     foreach ($plan in $defenderPlans) {
-        Write-Host "  Resetting: $plan" -ForegroundColor Yellow
         az security pricing create --name $plan --tier Free 2>$null
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "    Reset: $plan" -ForegroundColor Green
+            Write-Host "  Reset: $plan" -ForegroundColor Green
         } else {
-            Write-Host "    Skipped (not enabled or insufficient permissions): $plan" -ForegroundColor Gray
+            Write-Host "  Skipped (not enabled or no permission): $plan" -ForegroundColor Gray
         }
     }
 } else {
@@ -246,23 +237,22 @@ if ($EntraGroupName) {
     $groupId = az ad group show --group $EntraGroupName --query "id" -o tsv 2>$null
     if ($groupId) {
         az ad group delete --group $groupId
-        Write-Host "  Deleted group: $EntraGroupName" -ForegroundColor Green
+        Write-Host "  Deleted: $EntraGroupName" -ForegroundColor Green
     } else {
-        Write-Host "  Group not found (skipping): $EntraGroupName" -ForegroundColor Gray
+        Write-Host "  Not found (skipping): $EntraGroupName" -ForegroundColor Gray
     }
 } else {
     Write-Host "`n[4/4] Skipping Entra group removal (use -EntraGroupName to enable)" -ForegroundColor Gray
 }
 
 # ---------------------------------------------------------------------------
-# Done
+# Done — verify
 # ---------------------------------------------------------------------------
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
 Write-Host " Destroy complete." -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "Note: Resource group deletions run asynchronously." -ForegroundColor Yellow
-Write-Host "Verify in the portal or run:" -ForegroundColor Yellow
-Write-Host "  az group list --query ""[?starts_with(name,'$nameBase')]"" -o table" -ForegroundColor White
+Write-Host "Verify remaining resources:" -ForegroundColor Yellow
+Write-Host "  az group list --query `"[?starts_with(name,'$rgPrefix')]`" -o table" -ForegroundColor White
 Write-Host ""
