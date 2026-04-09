@@ -39,7 +39,7 @@ Azure Commercial:
 
 Azure Government:
 
-[![Launch Cloud Shell](https://img.shields.io/badge/Launch%20Cloud%20Shell-Government-1f497d?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://shell.azure.us/powershell)
+[![Launch Cloud Shell](https://img.shields.io/badge/Launch%20Cloud%20Shell-Government-1f497d?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://portal.azure.us/#cloudshell)
 
 ### What the destroy script removes
 
