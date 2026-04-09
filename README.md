@@ -31,9 +31,15 @@ Azure Government:
 
 ## Destroy (Teardown)
 
-Use the script below to remove everything created by this deployment. Click the button to open Azure Cloud Shell, then paste the command for your environment.
+Use the script below to remove everything created by this deployment. Click a button to open Azure Cloud Shell in the correct portal, then paste the command for your environment.
 
-[![Open in Cloud Shell](https://shell.azure.com/images/launchcloudshell.png)](https://shell.azure.com/powershell)
+Azure Commercial:
+
+[![Launch Cloud Shell](https://img.shields.io/badge/Launch%20Cloud%20Shell-Commercial-0078d4?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://shell.azure.com/powershell)
+
+Azure Government:
+
+[![Launch Cloud Shell](https://img.shields.io/badge/Launch%20Cloud%20Shell-Government-1f497d?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://shell.azure.us/powershell)
 
 ### What the destroy script removes
 
