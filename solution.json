@@ -420,6 +420,9 @@
           },
           "emailSecurityContact": {
             "value": "[parameters('emailSecurityContact')]"
+          },
+          "managementVirtualMachineSize": {
+            "value": "Standard_D2ads_v6"
           }
         }
       }
