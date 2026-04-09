@@ -746,8 +746,8 @@
         "policyDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/03055927-78bd-4236-86c0-f36125a10dc9",
         "enforcementMode": "DoNotEnforce",
         "parameters": {
-          "membersToExcludeInLocalAdministratorsGroup": { "value": [] },
-          "membersToIncludeInLocalAdministratorsGroup": { "value": [] }
+          "membersToExcludeInLocalAdministratorsGroup": { "value": "" },
+          "membersToIncludeInLocalAdministratorsGroup": { "value": "" }
         }
       }
     },
