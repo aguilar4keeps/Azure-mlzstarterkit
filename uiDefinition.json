@@ -520,10 +520,20 @@
               }
             },
             {
+              "name": "govCloudGraphWarning",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": "[equals(steps('basics').resourceScope.location.name, 'usgovvirginia')]",
+              "options": {
+                "style": "Warning",
+                "text": "Azure Government does not support the Microsoft.Graph ARM provider. Auto-create Entra security group is not available. Provide an existing Entra principal Object ID below."
+              }
+            },
+            {
               "name": "autoCreateEntraGroup",
               "type": "Microsoft.Common.CheckBox",
               "label": "Auto-create a new Entra security group for VM access",
-              "toolTip": "Creates a new Entra ID security group during deployment and assigns it VM Login access on all VMs. Requires the deployment service principal to have Microsoft Graph group creation permissions (GroupMember.ReadWrite.All). Recommended for new environments.",
+              "visible": "[not(equals(steps('basics').resourceScope.location.name, 'usgovvirginia'))]",
+              "toolTip": "Creates a new Entra ID security group during deployment and assigns it VM Login access on all VMs. Requires the deployment service principal to have Microsoft Graph group creation permissions (GroupMember.ReadWrite.All). Not available in Azure Government.",
               "defaultValue": false
             },
             {
