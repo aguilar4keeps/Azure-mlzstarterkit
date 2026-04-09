@@ -60,11 +60,11 @@ Azure Government:
 
 ### Usage
 
+> **Cloud Shell note:** The script must be downloaded before running. All examples below include the download as the first line — paste the entire block at once.
+
 **Minimum** — deletes all resource groups only, with confirmation prompt:
 ```powershell
-$scriptUrl = "https://raw.githubusercontent.com/aguilar4keeps/Azure-mlzstarterkit/main/destroy.ps1"
-Invoke-WebRequest -Uri $scriptUrl -OutFile destroy.ps1
-.\destroy.ps1 `
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/aguilar4keeps/Azure-mlzstarterkit/main/destroy.ps1" -OutFile destroy.ps1; .\destroy.ps1 `
   -SubscriptionId "<your-subscription-id>" `
   -Identifier "<identifier-used-at-deploy>" `
   -EnvironmentAbbreviation "<dev|test|prod>" `
@@ -73,9 +73,7 @@ Invoke-WebRequest -Uri $scriptUrl -OutFile destroy.ps1
 
 **Full teardown** — removes everything including Defender plans, policies, and Entra group:
 ```powershell
-$scriptUrl = "https://raw.githubusercontent.com/aguilar4keeps/Azure-mlzstarterkit/main/destroy.ps1"
-Invoke-WebRequest -Uri $scriptUrl -OutFile destroy.ps1
-.\destroy.ps1 `
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/aguilar4keeps/Azure-mlzstarterkit/main/destroy.ps1" -OutFile destroy.ps1; .\destroy.ps1 `
   -SubscriptionId "<your-subscription-id>" `
   -Identifier "<identifier-used-at-deploy>" `
   -EnvironmentAbbreviation "<dev|test|prod>" `
@@ -86,13 +84,13 @@ Invoke-WebRequest -Uri $scriptUrl -OutFile destroy.ps1
   -Force
 ```
 
-**Example** (matching a deployment with identifier `mlz`, environment `dev`, region `eastus`):
+**Example** (identifier `mlz`, environment `dev`, region `USGov Virginia`):
 ```powershell
-.\destroy.ps1 `
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/aguilar4keeps/Azure-mlzstarterkit/main/destroy.ps1" -OutFile destroy.ps1; .\destroy.ps1 `
   -SubscriptionId "9f2be59b-xxxx-xxxx-xxxx-xxxxxxxxxxxx" `
   -Identifier "mlz" `
   -EnvironmentAbbreviation "dev" `
-  -Location "eastus" `
+  -Location "usgovvirginia" `
   -EntraGroupName "mlz-lab-vm-users" `
   -RemoveDefenderPlans `
   -RemovePolicyAssignments `
