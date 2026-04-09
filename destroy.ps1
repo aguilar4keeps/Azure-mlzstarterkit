@@ -147,7 +147,7 @@ if ($LASTEXITCODE -ne 0) { Write-Error "Failed to set subscription context."; ex
 # ---------------------------------------------------------------------------
 Write-Host "Discovering resource groups with prefix '$rgPrefix'..." -ForegroundColor Cyan
 $discoveredRgsJson = az group list --query "[?starts_with(name,'$rgPrefix')].name" -o json 2>$null
-$discoveredRgs = $discoveredRgsJson | ConvertFrom-Json
+$discoveredRgs = @($discoveredRgsJson | ConvertFrom-Json)  # @() forces array even when result is null/single item
 
 if ($discoveredRgs.Count -eq 0) {
     Write-Host "  No resource groups found matching prefix '$rgPrefix'." -ForegroundColor Yellow
