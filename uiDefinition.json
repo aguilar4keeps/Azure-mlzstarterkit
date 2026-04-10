@@ -248,13 +248,6 @@
               }
             },
             {
-              "name": "deployMde",
-              "type": "Microsoft.Common.CheckBox",
-              "label": "Onboard VMs to Microsoft Defender for Endpoint (MDE) at provisioning time",
-              "toolTip": "WARNING: Requires Defender for Servers (P1 or P2) enabled above AND Microsoft Defender for Cloud already configured in this subscription. Extension only installs on Windows Server VMs (DC + member servers) — Windows 11 clients are not supported. Do NOT enable in Azure Government unless Defender for Cloud is fully provisioned first.",
-              "defaultValue": false
-            },
-            {
               "name": "deployDefenderForStorage",
               "type": "Microsoft.Common.CheckBox",
               "label": "Defender for Storage",
@@ -520,82 +513,12 @@
               }
             },
             {
-              "name": "govCloudGraphWarning",
-              "type": "Microsoft.Common.InfoBox",
-              "visible": "[equals(steps('basics').resourceScope.location.name, 'usgovvirginia')]",
-              "options": {
-                "style": "Warning",
-                "text": "Azure Government does not support the Microsoft.Graph ARM provider. Auto-create Entra security group is not available. Provide an existing Entra principal Object ID below."
-              }
-            },
-            {
-              "name": "autoCreateEntraGroup",
-              "type": "Microsoft.Common.CheckBox",
-              "label": "Auto-create a new Entra security group for VM access",
-              "visible": "[not(equals(steps('basics').resourceScope.location.name, 'usgovvirginia'))]",
-              "toolTip": "Creates a new Entra ID security group during deployment and assigns it VM Login access on all VMs. Requires the deployment service principal to have Microsoft Graph group creation permissions (GroupMember.ReadWrite.All). Not available in Azure Government.",
-              "defaultValue": false
-            },
-            {
-              "name": "entraGroupNote",
-              "type": "Microsoft.Common.InfoBox",
-              "visible": "[steps('identity').autoCreateEntraGroup]",
-              "options": {
-                "style": "Info",
-                "text": "A new security group will be created in Entra ID and assigned the VM Administrator Login role on all deployed VMs. After deployment, add users to this group in the Azure Portal: Microsoft Entra ID > Groups > find the group > Members > Add."
-              }
-            },
-            {
-              "name": "entraGroupName",
-              "type": "Microsoft.Common.TextBox",
-              "label": "New Security Group Name",
-              "visible": "[steps('identity').autoCreateEntraGroup]",
-              "toolTip": "Display name for the new Entra security group. Will default to mlz-{prefix}-vm-users if left blank.",
-              "placeholder": "e.g. mlz-lab-vm-users",
+              "name": "entraGroupSelector",
+              "type": "Microsoft.Graph.GroupPicker",
+              "label": "Entra Security Group for VM Login",
+              "toolTip": "Select an existing Entra ID security group. Members of this group will be assigned the VM Administrator Login role on all deployed VMs. To create a new group first, go to Microsoft Entra ID > Groups > New group, then return here.",
               "constraints": {
-                "required": false
-              }
-            },
-            {
-              "name": "entraLoginPrincipalId",
-              "type": "Microsoft.Common.TextBox",
-              "label": "Entra Principal Object ID",
-              "visible": "[not(steps('identity').autoCreateEntraGroup)]",
-              "toolTip": "Object ID (GUID) of an existing Entra ID user, group, or service principal for VM Login access. Find it: Azure Portal > Microsoft Entra ID > Users or Groups > select your account/group > copy Object ID. Using a security group is recommended — add/remove members without redeploying.",
-              "placeholder": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-              "constraints": {
-                "required": "[not(steps('identity').autoCreateEntraGroup)]",
-                "validations": [
-                  {
-                    "isValid": "[or(steps('identity').autoCreateEntraGroup, regex(steps('identity').entraLoginPrincipalId, '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))]",
-                    "message": "Enter a valid GUID in the format xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx."
-                  }
-                ]
-              }
-            },
-            {
-              "name": "entraPrincipalType",
-              "type": "Microsoft.Common.DropDown",
-              "label": "Entra Principal Type",
-              "visible": "[not(steps('identity').autoCreateEntraGroup)]",
-              "defaultValue": "Group (recommended — assign access to a security group)",
-              "toolTip": "Must match the type of the Object ID above. Group = security group (add/remove members without redeploying). User = individual Entra ID account. ServicePrincipal = app registration or managed identity.",
-              "constraints": {
-                "required": "[not(steps('identity').autoCreateEntraGroup)]",
-                "allowedValues": [
-                  {
-                    "label": "Group (recommended — assign access to a security group)",
-                    "value": "Group"
-                  },
-                  {
-                    "label": "User (individual Entra ID account)",
-                    "value": "User"
-                  },
-                  {
-                    "label": "Service Principal (app registration or managed identity)",
-                    "value": "ServicePrincipal"
-                  }
-                ]
+                "required": true
               }
             },
             {
@@ -770,65 +693,6 @@
                 ]
               }
             },
-            {
-              "name": "linuxHeader",
-              "type": "Microsoft.Common.TextBlock",
-              "options": {
-                "style": "Heading",
-                "text": "Linux VM (Optional)"
-              }
-            },
-            {
-              "name": "deployLinuxVm",
-              "type": "Microsoft.Common.CheckBox",
-              "label": "Deploy a Linux VM into the workload subnet",
-              "toolTip": "Deploys one additional Linux VM (prefix-lnx01) into the same Tier3 subnet. Gets Entra SSH login and, if MDE onboarding is enabled on the Security tab, the MDE.Linux extension. No domain join — Linux VM is standalone.",
-              "defaultValue": false
-            },
-            {
-              "name": "linuxVmWarning",
-              "type": "Microsoft.Common.InfoBox",
-              "visible": "[steps('remoteAccess').deployLinuxVm]",
-              "options": {
-                "style": "Warning",
-                "text": "The Linux VM requires outbound internet access (HTTP/HTTPS to apt and packages.microsoft.com) to install the Entra SSH login extension. In MLZ deployments, all spoke traffic routes through Azure Firewall which may block these requests. If the extension fails, the entire deployment will fail. Only enable this if your Azure Firewall policy allows outbound internet access from the spoke subnet."
-              }
-            },
-            {
-              "name": "linuxFlavor",
-              "type": "Microsoft.Common.DropDown",
-              "label": "Linux Distribution",
-              "visible": "[steps('remoteAccess').deployLinuxVm]",
-              "defaultValue": "Ubuntu Server 22.04 LTS (recommended)",
-              "toolTip": "Select the Linux distro. Ubuntu is strongly recommended — it installs the AAD SSH extension via apt which works in isolated/gov networks. RHEL 9 requires RHUI repo access and will fail if DNS or outbound connectivity to rhui4-1.microsoft.com is unavailable at extension install time.",
-              "constraints": {
-                "required": "[steps('remoteAccess').deployLinuxVm]",
-                "allowedValues": [
-                  { "label": "Ubuntu Server 22.04 LTS (recommended)", "value": "ubuntu-2204" },
-                  { "label": "Ubuntu Server 24.04 LTS", "value": "ubuntu-2404" },
-                  { "label": "Red Hat Enterprise Linux 9 (not recommended — requires RHUI access)", "value": "rhel-9" },
-                  { "label": "Debian 12", "value": "debian-12" }
-                ]
-              }
-            },
-            {
-              "name": "linuxVmSize",
-              "type": "Microsoft.Common.DropDown",
-              "label": "Linux VM Size",
-              "visible": "[steps('remoteAccess').deployLinuxVm]",
-              "defaultValue": "Standard_D2ads_v6 (2 vCPUs, 8 GiB) — recommended",
-              "toolTip": "VM size for the Linux VM. Standard_D2ads_v6 is available in Azure Government regions.",
-              "constraints": {
-                "required": "[steps('remoteAccess').deployLinuxVm]",
-                "allowedValues": [
-                  { "label": "Standard_D2ads_v6 (2 vCPUs, 8 GiB) — recommended", "value": "Standard_D2ads_v6" },
-                  { "label": "Standard_D4ads_v6 (4 vCPUs, 16 GiB)", "value": "Standard_D4ads_v6" },
-                  { "label": "Standard_D8ads_v6 (8 vCPUs, 32 GiB)", "value": "Standard_D8ads_v6" },
-                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB) — Azure Commercial only", "value": "Standard_D2s_v5" },
-                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB) — Azure Commercial only", "value": "Standard_D4s_v5" }
-                ]
-              }
-            }
           ]
         },
         {
@@ -865,7 +729,7 @@
         "deployBastion": "[steps('networking').deployBastion]",
         "location": "[steps('basics').resourceScope.location.name]",
         "deployActivityLogDiagnosticSetting": "[steps('securityCompliance').deployActivityLogDiagnosticSetting]",
-        "deployMde": "[steps('securityCompliance').deployMde]",
+        "deployMde": false,
         "deployDefender": "[steps('securityCompliance').deployDefender]",
         "deployDefenderCspm": "[steps('securityCompliance').deployDefenderCspm]",
         "deployDefenderForServers": "[steps('securityCompliance').deployDefenderForServers]",
@@ -894,10 +758,10 @@
         "safeModeAdminPassword": "[steps('identity').safeModeAdminPassword.password]",
         "domainName": "[steps('identity').domainName]",
         "domainNetbiosName": "[steps('identity').domainNetbiosName]",
-        "autoCreateEntraGroup": "[steps('identity').autoCreateEntraGroup]",
-        "entraGroupName": "[steps('identity').entraGroupName]",
-        "entraLoginPrincipalId": "[if(steps('identity').autoCreateEntraGroup, '', steps('identity').entraLoginPrincipalId)]",
-        "entraPrincipalType": "[if(steps('identity').autoCreateEntraGroup, 'Group', steps('identity').entraPrincipalType)]",
+        "autoCreateEntraGroup": false,
+        "entraGroupName": "",
+        "entraLoginPrincipalId": "[steps('identity').entraGroupSelector.objectId]",
+        "entraPrincipalType": "Group",
         "customWorkspaceName": "[if(and(steps('securityCompliance').deploySentinel, equals(steps('securityCompliance').workspaceOption, 'new')), steps('securityCompliance').newWorkspaceName, '')]",
         "existingWorkspaceResourceId": "[if(and(steps('securityCompliance').deploySentinel, equals(steps('securityCompliance').workspaceOption, 'existing')), steps('securityCompliance').existingWorkspace.id, '')]",
         "assignVmAdminRole": "[steps('identity').assignVmAdminRole]",
@@ -912,9 +776,9 @@
         "clientImageOffer": "[steps('remoteAccess').clientImageOffer]",
         "clientImageSku": "[steps('remoteAccess').clientImageSku]",
         "clientImageVersion": "[steps('remoteAccess').clientImageVersion]",
-        "deployLinuxVm": "[steps('remoteAccess').deployLinuxVm]",
-        "linuxFlavor": "[if(steps('remoteAccess').deployLinuxVm, steps('remoteAccess').linuxFlavor, 'ubuntu-2204')]",
-        "linuxVmSize": "[if(steps('remoteAccess').deployLinuxVm, steps('remoteAccess').linuxVmSize, 'Standard_D2ads_v6')]"
+        "deployLinuxVm": false,
+        "linuxFlavor": "ubuntu-2204",
+        "linuxVmSize": "Standard_D2ads_v6"
       }
     }
   }
