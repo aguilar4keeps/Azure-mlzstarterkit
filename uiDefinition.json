@@ -513,12 +513,27 @@
               }
             },
             {
+              "name": "entraGroupNote",
+              "type": "Microsoft.Common.InfoBox",
+              "options": {
+                "style": "Info",
+                "text": "To find your group's Object ID: Azure Portal > Microsoft Entra ID > Groups > select your group > copy the Object ID field."
+              }
+            },
+            {
               "name": "entraGroupSelector",
-              "type": "Microsoft.Graph.GroupPicker",
-              "label": "Entra Security Group for VM Login",
-              "toolTip": "Select an existing Entra ID security group. Members of this group will be assigned the VM Administrator Login role on all deployed VMs. To create a new group first, go to Microsoft Entra ID > Groups > New group, then return here.",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Entra Security Group Object ID",
+              "toolTip": "Object ID (GUID) of an existing Entra ID security group. Members of this group will be assigned VM Administrator Login access on all deployed VMs.",
+              "placeholder": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
               "constraints": {
-                "required": true
+                "required": true,
+                "validations": [
+                  {
+                    "regex": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                    "message": "Enter a valid GUID in the format xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx."
+                  }
+                ]
               }
             },
             {
@@ -760,7 +775,7 @@
         "domainNetbiosName": "[steps('identity').domainNetbiosName]",
         "autoCreateEntraGroup": false,
         "entraGroupName": "",
-        "entraLoginPrincipalId": "[steps('identity').entraGroupSelector.objectId]",
+        "entraLoginPrincipalId": "[steps('identity').entraGroupSelector]",
         "entraPrincipalType": "Group",
         "customWorkspaceName": "[if(and(steps('securityCompliance').deploySentinel, equals(steps('securityCompliance').workspaceOption, 'new')), steps('securityCompliance').newWorkspaceName, '')]",
         "existingWorkspaceResourceId": "[if(and(steps('securityCompliance').deploySentinel, equals(steps('securityCompliance').workspaceOption, 'existing')), steps('securityCompliance').existingWorkspace.id, '')]",
