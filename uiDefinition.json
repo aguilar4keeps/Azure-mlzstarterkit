@@ -251,7 +251,7 @@
               "name": "deployMde",
               "type": "Microsoft.Common.CheckBox",
               "label": "Onboard VMs to Microsoft Defender for Endpoint (MDE) at provisioning time",
-              "toolTip": "Deploys the MDE.Windows extension to all 6 VMs (DC, member servers, clients) immediately at deploy time — no wait for Defender for Cloud's async onboarding. If Defender for Servers is also enabled, Defender for Cloud will detect the extension is already installed and skip re-onboarding. Recommended when you need immediate MDE coverage.",
+              "toolTip": "WARNING: Requires Defender for Servers (P1 or P2) enabled above AND Microsoft Defender for Cloud already configured in this subscription. Extension only installs on Windows Server VMs (DC + member servers) — Windows 11 clients are not supported. Do NOT enable in Azure Government unless Defender for Cloud is fully provisioned first.",
               "defaultValue": false
             },
             {

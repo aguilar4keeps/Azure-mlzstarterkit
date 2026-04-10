@@ -305,7 +305,9 @@
     {
       "copy": {
         "name": "nics",
-        "count": "[length(variables('vmDefinitions'))]"
+        "count": "[length(variables('vmDefinitions'))]",
+        "mode": "serial",
+        "batchSize": 1
       },
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2024-05-01",
@@ -492,7 +494,6 @@
         "type": "MDE.Windows",
         "typeHandlerVersion": "1.0",
         "autoUpgradeMinorVersion": true,
-        "enableAutomaticUpgrade": true,
         "settings": {
           "forceReOnboarding": false
         }
@@ -644,7 +645,6 @@
         "type": "MDE.Linux",
         "typeHandlerVersion": "1.0",
         "autoUpgradeMinorVersion": true,
-        "enableAutomaticUpgrade": true,
         "settings": {
           "forceReOnboarding": false
         }
