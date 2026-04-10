@@ -438,7 +438,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/Azure/missionlz/main/src/add-ons/tier3/solution.json"
+          "uri": "[uri(deployment().properties.templateLink.uri, 'templates/tier3.json')]"
         },
         "parameters": {
           "deploymentNameSuffix": {
@@ -482,6 +482,9 @@
           },
           "subnetAddressPrefix": {
             "value": "[parameters('subnetAddressPrefix')]"
+          },
+          "managementVirtualMachineSize": {
+            "value": "Standard_D2ads_v6"
           },
           "workloadName": {
             "value": "[parameters('workloadName')]"

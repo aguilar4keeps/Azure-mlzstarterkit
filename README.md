@@ -104,11 +104,29 @@ az group list --query "[?starts_with(name,'mlz-dev-use-')]" -o table
 
 ---
 
+## Prerequisites
+
+Before deploying, run the following in **Azure Cloud Shell** (PowerShell) to register the required subscription features:
+
+```powershell
+# Required for CMK (Customer-Managed Key) encrypted VM disks used by MLZ
+az feature register --name EncryptionAtHost --namespace Microsoft.Compute
+az provider register --namespace Microsoft.Compute
+
+# Wait for registration to complete (repeat until output is "Registered")
+az feature show --name EncryptionAtHost --namespace Microsoft.Compute --query "properties.state" -o tsv
+```
+
+> **Note:** Registration typically takes 5–15 minutes. Do not deploy until the state shows `Registered`.
+
+---
+
 ## Files
 
 - `solution.json`: Subscription-level orchestrator (MLZ core + Tier3 + AD lab + CSPM coverage)
 - `solution.parameters.json`: Blank starter parameters for CLI deployments
 - `destroy.ps1`: Teardown script — removes all resource groups, optional Defender/policy/Entra cleanup
+- `templates/tier3.json`: Forked MLZ Tier3 add-on with `managementVirtualMachineSize` parameter exposed (required for Azure Government region SKU compatibility)
 - `templates/ad-entra-vms.json`: Resource group template for VMs + AD/Entra config
 - `templates/cspm-coverage.json`: SQL, Storage/container, ACR, and Resource Manager sample resources
 - `templates/scripts/*.ps1`: VM run-command scripts for AD promotion and domain join
@@ -134,4 +152,6 @@ When you click the blue deploy button, enter these in the portal UI:
 - This deployment now creates MLZ hub resources and no longer requires pre-existing hub IDs.
 - Bastion is enabled by default (`deployBastion = true`) and can be toggled in UI.
 - If Windows 11 SKU is unavailable in your target cloud, change `clientImage*` parameters.
+- The `EncryptionAtHost` feature **must be registered** on the subscription before deployment (see Prerequisites above). Both the MLZ hub and Tier3 storage deployments create ephemeral CMK VMs that require this feature.
+- The Tier3 template (`templates/tier3.json`) is a fork of the MLZ upstream `src/add-ons/tier3/solution.json` with one addition: a `managementVirtualMachineSize` parameter to support regions (e.g. `usgovvirginia`) where the default `Standard_D2ds_v4` SKU is unavailable. This kit pins it to `Standard_D2ads_v6`.
 - If this repository stays private, portal-linked raw template URIs are not publicly resolvable. For blue buttons to work directly, repository visibility should be public.
