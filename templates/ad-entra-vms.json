@@ -548,6 +548,9 @@
       "apiVersion": "2024-05-01",
       "name": "[format('{0}-nic', variables('linuxVmName'))]",
       "location": "[parameters('location')]",
+      "dependsOn": [
+        "nics"
+      ],
       "properties": {
         "dnsSettings": {
           "dnsServers": ["168.63.129.16"]

@@ -786,6 +786,15 @@
               "defaultValue": false
             },
             {
+              "name": "linuxVmWarning",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": "[steps('remoteAccess').deployLinuxVm]",
+              "options": {
+                "style": "Warning",
+                "text": "The Linux VM requires outbound internet access (HTTP/HTTPS to apt and packages.microsoft.com) to install the Entra SSH login extension. In MLZ deployments, all spoke traffic routes through Azure Firewall which may block these requests. If the extension fails, the entire deployment will fail. Only enable this if your Azure Firewall policy allows outbound internet access from the spoke subnet."
+              }
+            },
+            {
               "name": "linuxFlavor",
               "type": "Microsoft.Common.DropDown",
               "label": "Linux Distribution",
