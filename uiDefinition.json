@@ -692,7 +692,7 @@
                   { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB) — Azure Commercial only", "value": "Standard_D2s_v5" }
                 ]
               }
-            },
+            }
           ]
         },
         {
