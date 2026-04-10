@@ -736,11 +736,11 @@
               "name": "clientImageSku",
               "type": "Microsoft.Common.DropDown",
               "label": "Client Image SKU",
-              "defaultValue": "win11-23h2-pro",
-              "toolTip": "Marketplace client image SKU.",
+              "defaultValue": "win11-24h2-pro",
+              "toolTip": "Marketplace client image SKU. 24H2 is the current Windows 11 release and recommended for Azure Government.",
               "constraints": {
                 "required": true,
-                "allowedValues": "[if(equals(steps('remoteAccess').clientImageOffer, 'windows-10'), parse('[{\"label\":\"Windows 10 Pro 22H2\",\"value\":\"win10-22h2-pro\"},{\"label\":\"Windows 10 Enterprise 22H2\",\"value\":\"win10-22h2-ent\"}]'), parse('[{\"label\":\"Windows 11 Pro 23H2\",\"value\":\"win11-23h2-pro\"},{\"label\":\"Windows 11 Enterprise 23H2\",\"value\":\"win11-23h2-ent\"}]'))]"
+                "allowedValues": "[if(equals(steps('remoteAccess').clientImageOffer, 'windows-10'), parse('[{\"label\":\"Windows 10 Pro 22H2\",\"value\":\"win10-22h2-pro\"},{\"label\":\"Windows 10 Enterprise 22H2\",\"value\":\"win10-22h2-ent\"}]'), parse('[{\"label\":\"Windows 11 Pro 24H2 (recommended)\",\"value\":\"win11-24h2-pro\"},{\"label\":\"Windows 11 Enterprise 24H2\",\"value\":\"win11-24h2-ent\"},{\"label\":\"Windows 11 Pro 23H2\",\"value\":\"win11-23h2-pro\"},{\"label\":\"Windows 11 Enterprise 23H2\",\"value\":\"win11-23h2-ent\"}]'))]"
               }
             },
             {

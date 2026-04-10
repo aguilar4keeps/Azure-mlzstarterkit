@@ -164,7 +164,7 @@
     },
     "clientImageSku": {
       "type": "string",
-      "defaultValue": "win11-23h2-pro",
+      "defaultValue": "win11-24h2-pro",
       "metadata": {
         "description": "Client image SKU. Update if your cloud does not expose this SKU."
       }
@@ -550,7 +550,7 @@
       "location": "[parameters('location')]",
       "properties": {
         "dnsSettings": {
-          "dnsServers": "[variables('dnsServerList')]"
+          "dnsServers": ["168.63.129.16"]
         },
         "ipConfigurations": [
           {
