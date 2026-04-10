@@ -252,11 +252,11 @@
     },
     "serverVmSize": {
       "type": "string",
-      "defaultValue": "Standard_D4s_v5"
+      "defaultValue": "Standard_D4ads_v6"
     },
     "clientVmSize": {
       "type": "string",
-      "defaultValue": "Standard_D4s_v5"
+      "defaultValue": "Standard_D4ads_v6"
     },
     "serverImagePublisher": {
       "type": "string",
@@ -300,7 +300,7 @@
     },
     "linuxVmSize": {
       "type": "string",
-      "defaultValue": "Standard_D2s_v5"
+      "defaultValue": "Standard_D2ads_v6"
     },
     "linuxFlavor": {
       "type": "string",
@@ -780,6 +780,7 @@
       ],
       "resourceGroup": "[if(not(empty(parameters('existingWorkspaceResourceId'))), split(parameters('existingWorkspaceResourceId'), '/')[4], variables('tier3ResourceGroupName'))]",
       "properties": {
+        "expressionEvaluationOptions": { "scope": "inner" },
         "mode": "Incremental",
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",

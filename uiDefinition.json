@@ -684,17 +684,17 @@
               "name": "serverVmSize",
               "type": "Microsoft.Common.DropDown",
               "label": "Server VM Size",
-              "toolTip": "VM size for the domain controller and member servers. For a small lab environment, Standard_D2s_v5 is sufficient. Standard_D4s_v5 is recommended for production-like workloads.",
-              "defaultValue": "Standard_D4s_v5 (4 vCPUs, 16 GiB) — recommended",
+              "toolTip": "VM size for the domain controller and member servers. Standard_D4ads_v6 is recommended and available in Azure Government regions.",
+              "defaultValue": "Standard_D4ads_v6 (4 vCPUs, 16 GiB) — recommended",
               "constraints": {
                 "required": true,
                 "allowedValues": [
-                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB) — small lab / dev", "value": "Standard_D2s_v5" },
-                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB) — recommended", "value": "Standard_D4s_v5" },
-                  { "label": "Standard_D8s_v5 (8 vCPUs, 32 GiB) — medium workload", "value": "Standard_D8s_v5" },
-                  { "label": "Standard_D16s_v5 (16 vCPUs, 64 GiB) — large workload", "value": "Standard_D16s_v5" },
-                  { "label": "Standard_D2s_v4 (2 vCPUs, 8 GiB)", "value": "Standard_D2s_v4" },
-                  { "label": "Standard_D4s_v4 (4 vCPUs, 16 GiB)", "value": "Standard_D4s_v4" }
+                  { "label": "Standard_D2ads_v6 (2 vCPUs, 8 GiB) — small lab / dev", "value": "Standard_D2ads_v6" },
+                  { "label": "Standard_D4ads_v6 (4 vCPUs, 16 GiB) — recommended", "value": "Standard_D4ads_v6" },
+                  { "label": "Standard_D8ads_v6 (8 vCPUs, 32 GiB) — medium workload", "value": "Standard_D8ads_v6" },
+                  { "label": "Standard_D16ads_v6 (16 vCPUs, 64 GiB) — large workload", "value": "Standard_D16ads_v6" },
+                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB) — Azure Commercial only", "value": "Standard_D4s_v5" },
+                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB) — Azure Commercial only", "value": "Standard_D2s_v5" }
                 ]
               }
             },
@@ -757,16 +757,16 @@
               "name": "clientVmSize",
               "type": "Microsoft.Common.DropDown",
               "label": "Client VM Size",
-              "toolTip": "VM size for the 3 Windows client workstations. Standard_D2s_v5 is sufficient for a small lab. Standard_D4s_v5 is recommended if running heavier desktop workloads.",
-              "defaultValue": "Standard_D4s_v5 (4 vCPUs, 16 GiB) — recommended",
+              "toolTip": "VM size for the 3 Windows client workstations. Standard_D4ads_v6 is recommended and available in Azure Government regions.",
+              "defaultValue": "Standard_D4ads_v6 (4 vCPUs, 16 GiB) — recommended",
               "constraints": {
                 "required": true,
                 "allowedValues": [
-                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB) — small lab / dev", "value": "Standard_D2s_v5" },
-                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB) — recommended", "value": "Standard_D4s_v5" },
-                  { "label": "Standard_D8s_v5 (8 vCPUs, 32 GiB) — medium workload", "value": "Standard_D8s_v5" },
-                  { "label": "Standard_D2s_v4 (2 vCPUs, 8 GiB)", "value": "Standard_D2s_v4" },
-                  { "label": "Standard_D4s_v4 (4 vCPUs, 16 GiB)", "value": "Standard_D4s_v4" }
+                  { "label": "Standard_D2ads_v6 (2 vCPUs, 8 GiB) — small lab / dev", "value": "Standard_D2ads_v6" },
+                  { "label": "Standard_D4ads_v6 (4 vCPUs, 16 GiB) — recommended", "value": "Standard_D4ads_v6" },
+                  { "label": "Standard_D8ads_v6 (8 vCPUs, 32 GiB) — larger workload", "value": "Standard_D8ads_v6" },
+                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB) — Azure Commercial only", "value": "Standard_D4s_v5" },
+                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB) — Azure Commercial only", "value": "Standard_D2s_v5" }
                 ]
               }
             },
@@ -807,16 +807,16 @@
               "type": "Microsoft.Common.DropDown",
               "label": "Linux VM Size",
               "visible": "[steps('remoteAccess').deployLinuxVm]",
-              "defaultValue": "Standard_D2s_v5 (2 vCPUs, 8 GiB) — recommended",
-              "toolTip": "VM size for the Linux VM. Standard_D2s_v5 is sufficient for most lab workloads.",
+              "defaultValue": "Standard_D2ads_v6 (2 vCPUs, 8 GiB) — recommended",
+              "toolTip": "VM size for the Linux VM. Standard_D2ads_v6 is available in Azure Government regions.",
               "constraints": {
                 "required": "[steps('remoteAccess').deployLinuxVm]",
                 "allowedValues": [
-                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB) — recommended", "value": "Standard_D2s_v5" },
-                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB)", "value": "Standard_D4s_v5" },
-                  { "label": "Standard_D8s_v5 (8 vCPUs, 32 GiB)", "value": "Standard_D8s_v5" },
-                  { "label": "Standard_B2s (2 vCPUs, 4 GiB) — budget", "value": "Standard_B2s" },
-                  { "label": "Standard_B4ms (4 vCPUs, 16 GiB) — budget", "value": "Standard_B4ms" }
+                  { "label": "Standard_D2ads_v6 (2 vCPUs, 8 GiB) — recommended", "value": "Standard_D2ads_v6" },
+                  { "label": "Standard_D4ads_v6 (4 vCPUs, 16 GiB)", "value": "Standard_D4ads_v6" },
+                  { "label": "Standard_D8ads_v6 (8 vCPUs, 32 GiB)", "value": "Standard_D8ads_v6" },
+                  { "label": "Standard_D2s_v5 (2 vCPUs, 8 GiB) — Azure Commercial only", "value": "Standard_D2s_v5" },
+                  { "label": "Standard_D4s_v5 (4 vCPUs, 16 GiB) — Azure Commercial only", "value": "Standard_D4s_v5" }
                 ]
               }
             }
@@ -905,7 +905,7 @@
         "clientImageVersion": "[steps('remoteAccess').clientImageVersion]",
         "deployLinuxVm": "[steps('remoteAccess').deployLinuxVm]",
         "linuxFlavor": "[if(steps('remoteAccess').deployLinuxVm, steps('remoteAccess').linuxFlavor, 'ubuntu-2204')]",
-        "linuxVmSize": "[if(steps('remoteAccess').deployLinuxVm, steps('remoteAccess').linuxVmSize, 'Standard_D2s_v5')]"
+        "linuxVmSize": "[if(steps('remoteAccess').deployLinuxVm, steps('remoteAccess').linuxVmSize, 'Standard_D2ads_v6')]"
       }
     }
   }
