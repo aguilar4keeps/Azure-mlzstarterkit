@@ -465,8 +465,7 @@
         "publisher": "Microsoft.Azure.ActiveDirectory",
         "type": "AADLoginForWindows",
         "typeHandlerVersion": "2.2",
-        "autoUpgradeMinorVersion": true,
-        "enableAutomaticUpgrade": true
+        "autoUpgradeMinorVersion": true
       },
       "dependsOn": [
         "[resourceId('Microsoft.Compute/virtualMachines', variables('vmDefinitions')[copyIndex()].name)]"
@@ -622,8 +621,7 @@
         "publisher": "Microsoft.Azure.ActiveDirectory",
         "type": "AADSSHLoginForLinux",
         "typeHandlerVersion": "1.0",
-        "autoUpgradeMinorVersion": true,
-        "enableAutomaticUpgrade": true
+        "autoUpgradeMinorVersion": true
       },
       "dependsOn": [
         "[resourceId('Microsoft.Compute/virtualMachines', variables('linuxVmName'))]"
