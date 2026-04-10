@@ -261,37 +261,43 @@
         "name": "[format('{0}-dc01', parameters('prefix'))]",
         "size": "[parameters('serverVmSize')]",
         "image": "[variables('serverImage')]",
-        "isDc": true
+        "isDc": true,
+        "isServer": true
       },
       {
         "name": "[format('{0}-ms01', parameters('prefix'))]",
         "size": "[parameters('serverVmSize')]",
         "image": "[variables('serverImage')]",
-        "isDc": false
+        "isDc": false,
+        "isServer": true
       },
       {
         "name": "[format('{0}-ms02', parameters('prefix'))]",
         "size": "[parameters('serverVmSize')]",
         "image": "[variables('serverImage')]",
-        "isDc": false
+        "isDc": false,
+        "isServer": true
       },
       {
         "name": "[format('{0}-cl01', parameters('prefix'))]",
         "size": "[parameters('clientVmSize')]",
         "image": "[variables('clientImage')]",
-        "isDc": false
+        "isDc": false,
+        "isServer": false
       },
       {
         "name": "[format('{0}-cl02', parameters('prefix'))]",
         "size": "[parameters('clientVmSize')]",
         "image": "[variables('clientImage')]",
-        "isDc": false
+        "isDc": false,
+        "isServer": false
       },
       {
         "name": "[format('{0}-cl03', parameters('prefix'))]",
         "size": "[parameters('clientVmSize')]",
         "image": "[variables('clientImage')]",
-        "isDc": false
+        "isDc": false,
+        "isServer": false
       }
     ]
   },
@@ -476,7 +482,7 @@
         "name": "mdeExtensions",
         "count": "[length(variables('vmDefinitions'))]"
       },
-      "condition": "[parameters('deployMde')]",
+      "condition": "[and(parameters('deployMde'), variables('vmDefinitions')[copyIndex()].isServer)]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "apiVersion": "2024-11-01",
       "name": "[format('{0}/{1}', variables('vmDefinitions')[copyIndex()].name, 'MDE.Windows')]",

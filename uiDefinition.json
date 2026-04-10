@@ -791,13 +791,13 @@
               "label": "Linux Distribution",
               "visible": "[steps('remoteAccess').deployLinuxVm]",
               "defaultValue": "Ubuntu Server 22.04 LTS (recommended)",
-              "toolTip": "Select the Linux distro. All options use Gen2 images with Trusted Launch.",
+              "toolTip": "Select the Linux distro. Ubuntu is strongly recommended — it installs the AAD SSH extension via apt which works in isolated/gov networks. RHEL 9 requires RHUI repo access and will fail if DNS or outbound connectivity to rhui4-1.microsoft.com is unavailable at extension install time.",
               "constraints": {
                 "required": "[steps('remoteAccess').deployLinuxVm]",
                 "allowedValues": [
                   { "label": "Ubuntu Server 22.04 LTS (recommended)", "value": "ubuntu-2204" },
                   { "label": "Ubuntu Server 24.04 LTS", "value": "ubuntu-2404" },
-                  { "label": "Red Hat Enterprise Linux 9", "value": "rhel-9" },
+                  { "label": "Red Hat Enterprise Linux 9 (not recommended — requires RHUI access)", "value": "rhel-9" },
                   { "label": "Debian 12", "value": "debian-12" }
                 ]
               }
